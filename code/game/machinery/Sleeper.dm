@@ -269,7 +269,7 @@
 			dat += text("<BR>Output Beaker has [] units of free space remaining<BR><HR>", src.beaker.reagents.maximum_volume - src.beaker.reagents.total_volume)
 		else
 			if(occupant && !emagged && get_insurance_type(occupant) == INSURANCE_NONE)
-				dat += "<span class='disabled'>Start Dialysis (Requires Insurance)</span>"
+				dat += "<span class='disabled'>Start Dialysis</span>"
 			else
 				dat += "<A href='byond://?src=\ref[src];togglefilter=1'>Start Dialysis</A>"
 			dat += text("<BR>Output Beaker has [] units of free space remaining", src.beaker.reagents.maximum_volume - src.beaker.reagents.total_volume)
@@ -290,7 +290,7 @@
 				if(has_insurance)
 					dat += "<BR><A href='byond://?src=\ref[src];inject=[C.id]'>Inject [C.name]</A>"
 				else
-					dat += "<BR><span class='disabled'>Inject [C.name] (Requires Insurance)</span>"
+					dat += "<BR><span class='disabled'>Inject [C.name]</span>"
 	else
 		for(var/re in available_chems)
 			var/datum/reagent/C = chemical_reagents_list[re]

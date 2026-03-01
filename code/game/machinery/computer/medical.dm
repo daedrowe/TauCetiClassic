@@ -251,9 +251,9 @@ ADD_TO_GLOBAL_LIST(/obj/machinery/computer/med_data, med_record_consoles_list)
 					src.temp = "Ошибка: не найден банковский счет привязанный к медицинской записи."
 					return
 
-				var/obj/item/weapon/card/id/I = usr.get_active_hand()
+				var/obj/item/weapon/card/id/I = src.scan
 				if(!istype(I) && !issilicon(usr))
-					src.temp = "Ошибка: требуется взять в активную руку ID карту с доступом для подтверждения транзакции."
+					src.temp = "Ошибка: требуется вставить ID карту с доступом для подтверждения транзакции."
 					return
 				if(!issilicon(usr) && !check_access(I))
 					src.temp = "Ошибка: отказано в доступе. Вы не авторизованы для проведения страховых манипуляций."
@@ -288,7 +288,8 @@ ADD_TO_GLOBAL_LIST(/obj/machinery/computer/med_data, med_record_consoles_list)
 						counter++
 					src.active2.fields["com_[counter]"] = "Made by [authenticated] ([rank]) on [worldtime2text()], [time2text(world.realtime, "DD/MM")]/[game_year]<BR>[log_msg]"
 
-				src.temp = "Страховка успешно повышена до [target_insurance]."
+				// src.temp = "Страховка успешно повышена до [target_insurance]." -> removed to avoid clearing the screen
+				updateUsrDialog() // force re-render
 
 		if (href_list["del_all"])
 			src.temp = "Are you sure you wish to delete all records?<br>\n\t<A href='byond://?src=\ref[src];temp=1;del_all2=1'>Yes</A><br>\n\t<A href='byond://?src=\ref[src];temp=1'>No</A><br>"
