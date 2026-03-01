@@ -39,6 +39,49 @@
 	owner.sight &= ~(SEE_TURFS | SEE_MOBS | SEE_OBJS)
 	return isreplicator(owner)
 
+/atom/movable/screen/alert/status_effect/swarms_gift
+	name = "Дар роя"
+	desc = "Императрице выгодно, чтобы вы были здоровы. Она помогает вам регенерировать."
+	icon_state = "alien_help"
+	alerttooltipstyle = "alien"
+
+/datum/status_effect/life_support
+	id = "life_support"
+	duration = -1
+	tick_interval = 10
+	alert_type = /atom/movable/screen/alert/status_effect/life_support
+	var/last_dead_time
+
+/datum/status_effect/life_support/proc/update_time_of_death()
+	if(last_dead_time)
+		var/delta = world.time - last_dead_time
+		var/new_timeofdeath = owner.timeofdeath + delta
+		owner.timeofdeath = new_timeofdeath
+		owner.tod = worldtime2text()
+		last_dead_time = null
+	if(owner.stat == DEAD)
+		last_dead_time = world.time
+
+/datum/status_effect/life_support/on_creation(mob/living/new_owner, set_duration)
+	. = ..()
+	update_time_of_death()
+
+/datum/status_effect/life_support/tick()
+	update_time_of_death()
+
+/datum/status_effect/life_support/on_remove()
+	update_time_of_death()
+	return ..()
+
+/datum/status_effect/life_support/be_replaced()
+	update_time_of_death()
+	return ..()
+
+/atom/movable/screen/alert/status_effect/life_support
+	name = "Искусственное жизнеобеспечение"
+	desc = "Машины поддерживают циркуляцию вашей крови и вентиляцию легких. Ваше клеточное разрушение после смерти приостановлено."
+	icon_state = "asleep"
+
 /atom/movable/screen/alert/status_effect/alertness
 	name = "Настороженность"
 	desc = "Люди используют болы, следует быть осторожнее. Ваши рефлексы повышены."

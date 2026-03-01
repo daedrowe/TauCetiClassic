@@ -183,7 +183,7 @@
 	return failed_breath
 
 /obj/item/organ/internal/lungs/proc/handle_failed_breath()
-	if(owner.reagents.has_reagent("inaprovaline") || HAS_TRAIT(src, TRAIT_EXTERNAL_VENTILATION))
+	if(owner.reagents.has_reagent("inaprovaline"))
 		return
 	if(prob(15))
 		if(!owner.species.flags[IS_SYNTHETIC])

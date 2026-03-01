@@ -74,6 +74,14 @@
 		..()
 	return
 
+/obj/machinery/computer/cloning/emag_act(mob/user)
+	if(emagged)
+		to_chat(user, "<span class='warning'>Консоль уже взломана.</span>")
+		return FALSE
+	emagged = TRUE
+	to_chat(user, "<span class='notice'>Вы замыкаете цепи идентификации и проверки баз данных. Консоль больше не требует страховых полисов для клонирования.</span>")
+	return TRUE
+
 /obj/machinery/computer/cloning/ui_interact(mob/user)
 	updatemodules()
 	var/dat = ""
@@ -317,9 +325,15 @@
 		var/datum/dna2/record/C = locate(href_list["clone"])
 		//Look for that player! They better be dead!
 		if(istype(C))
+			var/datum/data/record/db_record = find_general_record("fingerprint", md5(C.dna.uni_identity))
+			if(!db_record)
+				db_record = find_general_record("name", C.dna.real_name)
+			
 			//Can't clone without someone to clone.  Or a pod.  Or if the pod is busy. Or full of gibs.
 			if(!pod1)
 				temp = "Ошибка: не обнаружено капсулы клонирования."
+			else if(!emagged && (!db_record || db_record.fields["insurance_type"] != INSURANCE_PREMIUM))
+				temp = "Ошибка: у пациента отсутствует расширенный полис страхования жизнедеятельности (Premium). Выращивание нового тела не покрывается текущей страховкой."
 			else if(pod1.occupant)
 				temp = "Ошибка: капсула клонирования уже занята."
 			else if(pod1.biomass < CLONE_BIOMASS)
