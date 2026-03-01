@@ -25,6 +25,8 @@
 
 #define STATUS_EFFECT_STASIS_BAG /datum/status_effect/incapacitating/stasis_bag // Halts biological functions like bleeding, chemical processing, blood regeneration, etc
 
+#define STATUS_EFFECT_LIFE_SUPPORT /datum/status_effect/life_support // Halts time_of_death like stasis bag, but allows breathing and other biological functions
+
 #define STATUS_EFFECT_REMOVE_WET /datum/status_effect/remove_trait/wet_hands
 
 #define STATUS_EFFECT_REMOVE_GREASY /datum/status_effect/remove_trait/greasy_hands
