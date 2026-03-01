@@ -148,6 +148,14 @@
 	COOLDOWN_DECLARE(next_print)
 	required_skills = list(/datum/skill/medical = SKILL_LEVEL_TRAINED)
 
+/obj/machinery/body_scanconsole/emag_act(mob/user)
+	if(emagged)
+		to_chat(user, "<span class='warning'>[src] уже взломана.</span>")
+		return FALSE
+	emagged = TRUE
+	to_chat(user, "<span class='notice'>Вы отключаете протоколы экономии термобумаги. [src] больше не требует страховых полисов для печати.</span>")
+	return TRUE
+
 /obj/machinery/body_scanconsole/atom_init()
 	..()
 	return INITIALIZE_HINT_LATELOAD
@@ -312,6 +320,10 @@
 		return
 
 	if(!connected || !connected.occupant)
+		return
+
+	if(!emagged && get_insurance_type(connected.occupant) == INSURANCE_NONE)
+		to_chat(usr, "<span class='warning'>Ошибка: у пациента отсутствует базовая страховка. В целях экономии термобумаги распечатка результатов запрещена.</span>")
 		return
 
 	if(!COOLDOWN_FINISHED(src, next_print)) //10 sec cooldown
