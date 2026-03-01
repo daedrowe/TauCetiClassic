@@ -152,10 +152,6 @@
 	// First off, there's no oxygen supply, so the mob will slowly take brain damage
 	owner.adjustBrainLoss(0.1)
 
-	// Next, the method to induce stasis has some adverse side-effects, manifesting
-	// as cloneloss
-	owner.adjustCloneLoss(0.1)
-
 /datum/status_effect/incapacitating/stasis_bag/on_creation(mob/living/new_owner, set_duration, updating_canmove)
 	. = ..()
 	update_time_of_death()

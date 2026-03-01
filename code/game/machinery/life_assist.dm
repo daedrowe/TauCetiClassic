@@ -49,12 +49,21 @@
 	SHOULD_CALL_PARENT(TRUE)
 	if(assist_trait)
 		ADD_TRAIT(H, assist_trait, src)
+	check_life_support(H)
 
 // Remove the LIFE_ASSIST trait, etc.
 /obj/machinery/life_assist/proc/deassist(mob/living/carbon/human/H)
 	SHOULD_CALL_PARENT(TRUE)
 	if(assist_trait)
 		REMOVE_TRAIT(H, assist_trait, src)
+	check_life_support(H)
+
+/obj/machinery/life_assist/proc/check_life_support(mob/living/carbon/human/H)
+	if(HAS_TRAIT(H, TRAIT_EXTERNAL_VENTILATION) && HAS_TRAIT(H, TRAIT_EXTERNAL_HEART))
+		if(!H.has_status_effect(STATUS_EFFECT_LIFE_SUPPORT))
+			H.apply_status_effect(STATUS_EFFECT_LIFE_SUPPORT)
+	else
+		H.remove_status_effect(STATUS_EFFECT_LIFE_SUPPORT)
 
 /obj/machinery/life_assist/MouseDrop(over_object, src_location, over_location)
 	..()
