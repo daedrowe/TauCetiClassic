@@ -145,6 +145,14 @@
 	if(default_deconstruction_crowbar(I))
 		return
 
+/obj/machinery/sleeper/emag_act(mob/user)
+	if(emagged)
+		to_chat(user, "<span class='warning'>[src] уже взломан.</span>")
+		return FALSE
+	emagged = TRUE
+	to_chat(user, "<span class='notice'>Вы замыкаете блок авторизации счетов. [src] больше не требует страховых полисов.</span>")
+	return TRUE
+
 /obj/machinery/sleeper/ex_act(severity)
 	if(filtering)
 		toggle_filter()
@@ -260,7 +268,10 @@
 			dat += "<A href='byond://?src=\ref[src];togglefilter=1'>Stop Dialysis</A>"
 			dat += text("<BR>Output Beaker has [] units of free space remaining<BR><HR>", src.beaker.reagents.maximum_volume - src.beaker.reagents.total_volume)
 		else
-			dat += "<A href='byond://?src=\ref[src];togglefilter=1'>Start Dialysis</A>"
+			if(occupant && !emagged && get_insurance_type(occupant) == INSURANCE_NONE)
+				dat += "<span class='disabled'>Start Dialysis (Requires Insurance)</span>"
+			else
+				dat += "<A href='byond://?src=\ref[src];togglefilter=1'>Start Dialysis</A>"
 			dat += text("<BR>Output Beaker has [] units of free space remaining", src.beaker.reagents.maximum_volume - src.beaker.reagents.total_volume)
 	else
 		dat += "<BR>No Dialysis Output Beaker is present."
@@ -272,10 +283,14 @@
 	else
 		dat += "<span class='disabled'>Inject Inaprovaline</span>"
 	if(occupant && occupant.health > min_health)
+		var/has_insurance = (emagged || get_insurance_type(occupant) != INSURANCE_NONE)
 		for(var/re in available_chems)
 			var/datum/reagent/C = chemical_reagents_list[re]
 			if(C)
-				dat += "<BR><A href='byond://?src=\ref[src];inject=[C.id]'>Inject [C.name]</A>"
+				if(has_insurance)
+					dat += "<BR><A href='byond://?src=\ref[src];inject=[C.id]'>Inject [C.name]</A>"
+				else
+					dat += "<BR><span class='disabled'>Inject [C.name] (Requires Insurance)</span>"
 	else
 		for(var/re in available_chems)
 			var/datum/reagent/C = chemical_reagents_list[re]
@@ -302,9 +317,15 @@
 	else if(href_list["removebeaker"])
 		remove_beaker()
 	else if(href_list["togglefilter"])
+		if(!filtering && occupant && !emagged && get_insurance_type(occupant) == INSURANCE_NONE)
+			to_chat(usr, "<span class='warning'>Отказано: у пациента отсутствует базовая страховка. Диализ крови отменен.</span>")
+			return
 		toggle_filter()
 	else if(occupant && occupant.stat != DEAD)
 		if(href_list["inject"] == "inaprovaline" || (occupant.health > min_health && (href_list["inject"] in available_chems)))
+			if(href_list["inject"] != "inaprovaline" && !emagged && get_insurance_type(occupant) == INSURANCE_NONE)
+				to_chat(usr, "<span class='warning'>Отказано: у пациента отсутствует базовая страховка. Введение препаратов отменено.</span>")
+				return
 			inject_chem(usr, href_list["inject"])
 		else
 			to_chat(usr, "<span class='notice'>ERROR: Subject is not in stable condition for auto-injection.</span>")

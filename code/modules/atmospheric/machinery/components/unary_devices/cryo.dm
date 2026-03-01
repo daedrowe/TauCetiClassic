@@ -202,7 +202,11 @@
 
 	switch(action)
 		if("switchOn")
-			on = state_open ? on : TRUE
+			if(!state_open)
+				if(occupant && !emagged && get_insurance_type(occupant) == INSURANCE_NONE)
+					to_chat(usr, "<span class='warning'>Отказано: у пациента отсутствует базовая страховка. Расход крио-смеси не санкционирован.</span>")
+				else
+					on = TRUE
 
 		if("switchOff")
 			on = FALSE
@@ -280,6 +284,11 @@
 	if(!do_skill_checks(user))
 		return
 
+	if(!on)
+		if(occupant && !emagged && get_insurance_type(occupant) == INSURANCE_NONE)
+			to_chat(user, "<span class='warning'>Отказано: у пациента отсутствует базовая страховка. Расход крио-смеси не санкционирован.</span>")
+			return
+
 	on = !on
 	update_icon()
 
@@ -331,6 +340,14 @@
 		return
 
 	return ..()
+
+/obj/machinery/atmospherics/components/unary/cryo_cell/emag_act(mob/user)
+	if(emagged)
+		to_chat(user, "<span class='warning'>[src] уже взломана.</span>")
+		return FALSE
+	emagged = TRUE
+	to_chat(user, "<span class='notice'>Вы замыкаете цепи идентификации. [src] больше не требует страховых полисов.</span>")
+	return TRUE
 
 /obj/machinery/atmospherics/components/unary/cryo_cell/open_machine()
 	if(!state_open && !panel_open)

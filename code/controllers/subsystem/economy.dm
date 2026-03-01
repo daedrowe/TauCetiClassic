@@ -170,10 +170,14 @@ SUBSYSTEM_DEF(economy)
 		send_message_about_problem_insurances(problem_record_id)
 
 /proc/get_insurance_type(mob/living/carbon/human/H)
+	if(!ishuman(H) || !H.dna)
+		return INSURANCE_NONE
 	var/datum/data/record/R = find_record("fingerprint", md5(H.dna.uni_identity), data_core.general)
 	if(!R)
-		return INSURANCE_NONE
-	return R.fields["insurance_type"]
+		R = find_record("name", H.real_name, data_core.general)
+	if(R)
+		return R.fields["insurance_type"]
+	return INSURANCE_NONE
 
 
 /proc/get_next_insurance_type(current_insurance_type, datum/money_account/MA, list/insurance_prices=SSeconomy.insurance_prices)

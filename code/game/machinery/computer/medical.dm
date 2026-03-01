@@ -67,13 +67,19 @@ ADD_TO_GLOBAL_LIST(/obj/machinery/computer/med_data, med_record_consoles_list)
 						user << browse_rsc(front, "front.png")
 						user << browse_rsc(side, "side.png")
 
+						var/insurance_upgrade_links = ""
+						if(active1.fields["insurance_type"] == INSURANCE_NONE)
+							insurance_upgrade_links = " <A href='byond://?src=\ref[src];upgrade_insurance=[INSURANCE_STANDARD]'>\[Купить Standard ([SSeconomy.insurance_prices[INSURANCE_STANDARD]] кр.)\]</A> <A href='byond://?src=\ref[src];upgrade_insurance=[INSURANCE_PREMIUM]'>\[Купить Premium ([SSeconomy.insurance_prices[INSURANCE_PREMIUM]] кр.)\]</A>"
+						else if(active1.fields["insurance_type"] == INSURANCE_STANDARD)
+							insurance_upgrade_links = " <A href='byond://?src=\ref[src];upgrade_insurance=[INSURANCE_PREMIUM]'>\[Купить Premium ([SSeconomy.insurance_prices[INSURANCE_PREMIUM]] кр.)\]</A>"
+
 						dat += "<style>img.nearest { -ms-interpolation-mode:nearest-neighbor }</style><table><tr><td>Name: [active1.fields["name"]] \
 								ID: [active1.fields["id"]]<BR>\n	\
 								Sex: <A href='byond://?src=\ref[src];field=sex'>[active1.fields["sex"]]</A><BR>\n	\
 								Age: <A href='byond://?src=\ref[src];field=age'>[active1.fields["age"]]</A><BR>\n	\
 								Fingerprint: <A href='byond://?src=\ref[src];field=fingerprint'>[active1.fields["fingerprint"]]</A><BR>\n	\
 								Insurance Account Number: <A href='byond://?src=\ref[src];field=insurance_account_number'>[active1.fields["insurance_account_number"]]</A><BR>\n	\
-								Insurance Type: [active1.fields["insurance_type"]]<BR>\n \
+								Insurance Type: [active1.fields["insurance_type"]][insurance_upgrade_links]<BR>\n \
 								Physical Status: <A href='byond://?src=\ref[src];field=p_stat'>[active1.fields["p_stat"]]</A><BR>\n	\
 								Mental Status: <A href='byond://?src=\ref[src];field=m_stat'>[active1.fields["m_stat"]]</A><BR></td><td align = center valign = top> \
 								Photo:<br><img src=front.png height=64 width=64 border=5 class=nearest><img src=side.png height=64 width=64 border=5 class=nearest></td></tr></table>"
@@ -229,6 +235,60 @@ ADD_TO_GLOBAL_LIST(/obj/machinery/computer/med_data, med_record_consoles_list)
 			src.temp += "<br><b>Antigen:</b> [v.fields["antigen"]]"
 			src.temp += "<br><b>Spread:</b> [v.fields["spread type"]] "
 			src.temp += "<br><b>Details:</b><br> <A href='byond://?src=\ref[src];field=vir_desc;edit_vir=\ref[v]'>[v.fields["description"]]</A>"
+
+		if (href_list["upgrade_insurance"])
+			var/a1 = src.active1
+			if(istype(src.active1, /datum/data/record))
+				var/target_insurance = href_list["upgrade_insurance"]
+				var/cost = SSeconomy.insurance_prices[target_insurance]
+				var/account_number = src.active1.fields["insurance_account_number"]
+				
+				if(!cost || !(src.authenticated) || usr.incapacitated() || (!Adjacent(usr) && !issilicon(usr) && !isobserver(usr)) || src.active1 != a1)
+					return
+
+				var/datum/money_account/MA = get_account(account_number)
+				if(!MA)
+					src.temp = "Ошибка: не найден банковский счет привязанный к медицинской записи."
+					return
+
+				var/obj/item/weapon/card/id/I = usr.get_active_hand()
+				if(!istype(I) && !issilicon(usr))
+					src.temp = "Ошибка: требуется взять в активную руку ID карту с доступом для подтверждения транзакции."
+					return
+				if(!issilicon(usr) && !check_access(I))
+					src.temp = "Ошибка: отказано в доступе. Вы не авторизованы для проведения страховых манипуляций."
+					return
+
+				if(MA.money < cost)
+					src.temp = "Ошибка: недостаточно средств на счету пациента ([MA.money] / [cost] кр.)."
+					return
+
+				// charge money
+				charge_to_account(MA.account_number, "Medical", "[target_insurance] Insurance payment", "NT Insurance", -cost)
+				var/med_account_number = global.department_accounts["Medical"].account_number
+				charge_to_account(med_account_number, med_account_number, "Insurance Upgrade", "NT Insurance", cost)
+
+				// update db
+				src.active1.fields["insurance_type"] = target_insurance
+				MA.owner_preferred_insurance_type = target_insurance
+				MA.owner_max_insurance_payment = cost
+
+				for(var/mob/living/carbon/human/H in global.human_list)
+					if(H.real_name == src.active1.fields["name"])
+						H.roundstart_insurance = target_insurance
+						if(H.client && H.client.prefs)
+							H.client.prefs.insurance = target_insurance
+							H.client.prefs.save_preferences()
+
+				// log operation
+				if(src.active2)
+					var/log_msg = "Страховка повышена до [target_insurance] сотрудником [authenticated] ([rank]). Оплачено со счета #[account_number]."
+					var/counter = 1
+					while(src.active2.fields["com_[counter]"])
+						counter++
+					src.active2.fields["com_[counter]"] = "Made by [authenticated] ([rank]) on [worldtime2text()], [time2text(world.realtime, "DD/MM")]/[game_year]<BR>[log_msg]"
+
+				src.temp = "Страховка успешно повышена до [target_insurance]."
 
 		if (href_list["del_all"])
 			src.temp = "Are you sure you wish to delete all records?<br>\n\t<A href='byond://?src=\ref[src];temp=1;del_all2=1'>Yes</A><br>\n\t<A href='byond://?src=\ref[src];temp=1'>No</A><br>"
