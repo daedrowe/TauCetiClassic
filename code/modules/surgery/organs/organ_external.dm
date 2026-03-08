@@ -32,8 +32,6 @@
 	var/default_icon_layer = BODY_LAYER  // mob overlay layer
 	var/organ_suffix                  // suffix for organs with variations
 	var/datum/species/species
-	var/b_type = BLOOD_A_PLUS
-	var/list/stored_SE          // SE snapshot from original owner for transplant compatibility
 	var/is_rejecting = FALSE
 
 	// Wound and structural data.
@@ -122,12 +120,18 @@
 		owner.mob_metabolism_mod.RemoveMods(src)
 	return ..()
 
-// owner can be optional
-/obj/item/organ/external/set_owner(mob/living/carbon/human/H)
-	..()
-
-	b_type = owner.dna.b_type
-	stored_SE = owner.dna.SE.Copy()
+/obj/item/organ/external/proc/get_se_compatibility(mob/living/carbon/human/H)
+	if(!H || !H.dna || !stored_SE)
+		return 100
+	
+	var/matching = 0
+	var/total = length(stored_SE)
+	if(!total)
+		return 100
+	for(var/i in 1 to total)
+		if(i <= length(H.dna.SE) && stored_SE[i] == H.dna.SE[i])
+			matching++
+	return round((matching / total) * 100)
 
 // species for external organs must always exist, our icon depends on it
 /obj/item/organ/external/proc/set_species(datum/species/S)
@@ -652,7 +656,7 @@ Note that amputating the affected organ does in fact remove the infection from t
 	for(var/obj/item/organ/internal/IO in bodypart_organs)
 		owner.organs -= IO
 		owner.organs_by_name -= IO.organ_tag
-		IO.owner = null
+		IO.set_owner(null)
 
 	owner.UpdateDamageIcon(src)
 	if(!clean && leaves_stump)
@@ -666,7 +670,7 @@ Note that amputating the affected organ does in fact remove the infection from t
 
 	if(!should_delete)
 		forceMove(owner.loc)
-		owner = null
+		set_owner(null)
 		apply_appearance()
 
 		var/matrix/M = matrix()

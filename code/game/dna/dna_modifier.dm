@@ -676,19 +676,16 @@
 			BLOOD_AB_PLUS, BLOOD_AB_MINUS
 		)
 
-		var/target_type = tgui_input_list(usr, "Выберите целевую группу крови:", "Blood Type Reconfiguration", blood_types)
-		if(!target_type || !connected || !connected.occupant)
-			return FALSE
+		var/target_type = pick(blood_types)
 		if(target_type == H.dna.b_type)
-			return FALSE
+			target_type = pick(blood_types - H.dna.b_type)
 
-		// Lock scanner and irradiate for 30 seconds
-		irradiating = 30
+		irradiating = 10
 		var/lock_state = connected.locked
 		connected.locked = 1
 		nanomanager.update_uis(src)
 
-		sleep(30 SECONDS)
+		sleep(10 SECONDS)
 
 		irradiating = 0
 		if(!connected || !connected.occupant)
@@ -699,11 +696,10 @@
 			connected.locked = lock_state
 			return FALSE
 
-		// Apply heavy radiation and clone damage
-		H.radiation += 50
-		H.adjustCloneLoss(30)
+		H.adjustHalLoss(20)
+		H.radiation += 150
+		H.adjustCloneLoss(70)
 
-		// Change blood type
 		H.dna.b_type = target_type
 		H.fixblood(FALSE)
 

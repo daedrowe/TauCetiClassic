@@ -7,8 +7,14 @@
 	var/converting = FALSE
 	var/cooldown_time = 0
 
+	item_action_types = list(/datum/action/item_action/implant/hemoadaptive)
+
 /datum/action/item_action/implant/hemoadaptive
 	name = "Активировать хемоадаптивный стимулятор"
+
+/datum/action/item_action/implant/hemoadaptive/Activate()
+	var/obj/item/weapon/implant/hemoadaptive/I = target
+	I.use_implant()
 
 /obj/item/weapon/implant/hemoadaptive/inject(mob/living/carbon/C, def_zone, safe_inject)
 	. = ..()
@@ -33,23 +39,19 @@
 	)
 
 	var/mob/living/carbon/human/H = implanted_mob
-	var/target_type = tgui_input_list(H, "Выберите целевую группу крови:", "Хемоадаптивный стимулятор", blood_types)
-	if(!target_type)
-		return
+	var/target_type = pick(blood_types)
 	if(target_type == H.dna.b_type)
-		to_chat(H, "<span class='notice'>Это уже ваша текущая группа крови.</span>")
-		return
+		target_type = pick(blood_types - H.dna.b_type)
 
 	converting = TRUE
 	to_chat(H, "<span class='boldwarning'>Стимулятор активирован. Процесс перестройки организма запущен...</span>")
 	to_chat(H, "<span class='userdanger'>Вы чувствуете, как нечто раздирает ваши кости изнутри!</span>")
 	H.emote("scream")
 
-	// 3 minute conversion process, damage every 10 seconds (18 ticks)
 	var/ticks = 0
-	var/max_ticks = 18
+	var/max_ticks = 10
 	while(ticks < max_ticks && converting && implanted_mob && !QDELETED(src))
-		sleep(10 SECONDS)
+		sleep(5 SECONDS)
 		ticks++
 
 		if(!implanted_mob || QDELETED(src))
@@ -62,24 +64,18 @@
 			to_chat(H, "<span class='warning'>Процесс конвертации прерван.</span>")
 			return
 
-		// Pain and damage (Reduced for implant)
-		H.adjustCloneLoss(1.5)
-		H.adjustToxLoss(1)
-		H.radiation += 1
+		H.adjustBruteLoss(3)
+		H.adjustHalLoss(10)
 
 		if(prob(20))
 			H.emote("scream")
 		if(prob(10))
 			H.vomit()
-		if(prob(5))
-			to_chat(H, "<span class='userdanger'>Болезненные спазмы пронзают ваше тело!</span>")
-			H.Weaken(2)
 
-		// Progress messages
 		switch(ticks)
 			if(6)
 				to_chat(H, "<span class='warning'>Вы чувствуете странную пульсацию в венах...</span>")
-			if(12)
+			if(8)
 				to_chat(H, "<span class='warning'>Процесс перестройки близится к завершению...</span>")
 
 	if(!implanted_mob || QDELETED(src) || !ishuman(implanted_mob))
@@ -87,8 +83,19 @@
 		return
 
 	H = implanted_mob
-	// Apply blood type change
 	H.dna.b_type = target_type
+	
+	var/list/transplanted_SE
+	for(var/obj/item/organ/external/BP in H.bodyparts)
+		if(BP.stored_SE)
+			transplanted_SE = BP.stored_SE
+			break
+	
+	if(transplanted_SE)
+		H.dna.SE = transplanted_SE.Copy()
+		H.dna.UpdateSE()
+		domutcheck(H)
+
 	H.fixblood(FALSE)
 
 	converting = FALSE

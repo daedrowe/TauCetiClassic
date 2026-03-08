@@ -138,7 +138,7 @@
 	if(!activation_emote || emote != activation_emote)
 		return FALSE
 
-	activate()
+	INVOKE_ASYNC(src, PROC_REF(activate))
 
 // place your implant effects here, don't call it directly
 /obj/item/weapon/implant/proc/activate()

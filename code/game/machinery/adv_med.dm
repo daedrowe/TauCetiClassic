@@ -252,15 +252,10 @@
 			if(E.status & ORGAN_ARTERY_CUT)
 				organData["internalBleeding"] = TRUE
 
-			// SE compatibility for transplanted organs
 			organData["isRejecting"] = E.is_rejecting
-			if(E.stored_SE && occupant.dna)
-				var/matching = 0
-				var/total = length(E.stored_SE)
-				for(var/i in 1 to total)
-					if(i <= length(occupant.dna.SE) && E.stored_SE[i] == occupant.dna.SE[i])
-						matching++
-				organData["seCompat"] = total > 0 ? round((matching / total) * 100) : 100
+			if(E.stored_SE)
+				var/seCompat = E.get_se_compatibility(occupant)
+				organData["seCompat"] = seCompat
 
 			extOrganData.Add(list(organData))
 
@@ -412,16 +407,11 @@
 			robot = "Протез:"
 		if(BP.open)
 			open = "Вскрытое:"
-		if(BP.is_rejecting)
-			rejecting = "Генетическое отторжение:"
-			// Calculate SE compatibility for print
-			if(BP.stored_SE && occupant.dna)
-				var/matching = 0
-				var/total = length(BP.stored_SE)
-				for(var/i in 1 to total)
-					if(i <= length(occupant.dna.SE) && BP.stored_SE[i] == occupant.dna.SE[i])
-						matching++
-				var/se_pct = total > 0 ? round((matching / total) * 100) : 100
+		var/se_pct = BP.get_se_compatibility(occupant)
+		if(BP.stored_SE)
+			if(se_pct >= 100)
+				rejecting += " Успешная SE-совместимость:"
+			else
 				rejecting += " SE-совместимость [se_pct]%:"
 		if(BP.germ_level >= INFECTION_LEVEL_ONE)
 			infected = "[get_germ_level_name(BP.germ_level)]:"

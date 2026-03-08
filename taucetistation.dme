@@ -1191,6 +1191,7 @@
 #include "code\game\objects\items\weapons\implants\exile.dm"
 #include "code\game\objects\items\weapons\implants\explosive.dm"
 #include "code\game\objects\items\weapons\implants\freedom.dm"
+#include "code\game\objects\items\weapons\implants\implant_hemoadaptive.dm"
 #include "code\game\objects\items\weapons\implants\implantchair.dm"
 #include "code\game\objects\items\weapons\implants\mindshield.dm"
 #include "code\game\objects\items\weapons\implants\misc.dm"

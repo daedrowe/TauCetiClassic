@@ -49,7 +49,7 @@
 		owner.death()
 
 /obj/item/organ/internal/remove(mob/living/carbon/human/M)
-	owner = null
+	set_owner(null)
 
 	if(M)
 		M.organs -= src

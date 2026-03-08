@@ -23,6 +23,8 @@
 	var/list/autopsy_data = list()     // Trauma data for forensics.
 	var/list/trace_chemicals = list()  // Traces of chemicals in the organ.
 	var/obj/item/organ/external/parent // Master-limb.
+	var/b_type = BLOOD_A_PLUS         
+	var/stored_SE                     
 
 	// Damage vars.
 	var/min_broken_damage = 30         // Damage before becoming broken
@@ -43,11 +45,16 @@
 
 	if(owner && vital)
 		owner.death()
-	owner = null
+	set_owner(null)
 
 /obj/item/organ/proc/set_owner(mob/living/carbon/human/H)
 	SHOULD_CALL_PARENT(TRUE)
-	loc = null
+	if(owner && owner.dna && length(owner.dna.SE) && !H && !stored_SE)
+		stored_SE = owner.dna.SE.Copy()
+		b_type = owner.dna.b_type
+
+	if(H)
+		loc = null
 	owner = H
 
 /obj/item/organ/process()

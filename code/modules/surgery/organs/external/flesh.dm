@@ -671,20 +671,11 @@ Note that amputating the affected organ does in fact remove the infection from t
 	if(BP.owner.species.name != BP.species.name)
 		chances *= 0.02
 
-	if(!blood_compatible(BP.owner.dna.b_type, BP.b_type))
+	if(!blood_compatible(BP.b_type, BP.owner.dna.b_type))
 		chances *= 0.4
 
-	// SE compatibility check (HLA-like tissue typing)
-	if(BP.stored_SE && BP.owner.dna)
-		var/matching_blocks = 0
-		var/total_blocks = length(BP.stored_SE)
-		for(var/i in 1 to total_blocks)
-			if(i <= length(BP.owner.dna.SE) && BP.stored_SE[i] == BP.owner.dna.SE[i])
-				matching_blocks++
-		if(total_blocks > 0)
-			var/se_match_ratio = matching_blocks / total_blocks
-			// At 0% match: chances *= 0.2, at 100% match: chances *= 1.0
-			chances *= 0.2 + 0.8 * se_match_ratio
+	var/se_match_ratio = BP.get_se_compatibility(BP.owner) / 100
+	chances *= 0.2 + 0.8 * se_match_ratio
 
 	if(prob(chances))
 		BP.is_rejecting = FALSE
