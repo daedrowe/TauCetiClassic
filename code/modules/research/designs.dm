@@ -1775,6 +1775,15 @@ other types of metals and chemistry for reagents).
 	build_path = /obj/item/weapon/implantcase/freedom
 	category = list("Illegal")
 
+/datum/design/implant_hemoadaptive
+	name = "Glass Case- 'Hemoadaptive'"
+	desc = "A case containing a hemoadaptive marrow stimulator."
+	id = "implant_hemoadaptive"
+	build_type = PROTOLATHE
+	materials = list(MAT_METAL = 1000, MAT_GLASS = 1000, MAT_SILVER = 2000, MAT_GOLD = 2000, MAT_DIAMOND = 500)
+	build_path = /obj/item/weapon/implantcase/hemoadaptive
+	category = list("Support")
+
 /datum/design/chameleon
 	name = "Chameleon Kit"
 	desc = "A set of clothes with dials on them."

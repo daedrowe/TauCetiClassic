@@ -659,6 +659,57 @@
 					connected.occupant.UpdateAppearance()
 		connected.locked = lock_state
 
+	else if(href_list["bloodTypeReconfig"])
+		if(!connected || !connected.occupant)
+			return FALSE
+		if(irradiating)
+			return FALSE
+
+		var/mob/living/carbon/human/H = connected.occupant
+		if(!ishuman(H) || !H.dna)
+			return FALSE
+
+		var/list/blood_types = list(
+			BLOOD_O_PLUS, BLOOD_O_MINUS,
+			BLOOD_A_PLUS, BLOOD_A_MINUS,
+			BLOOD_B_PLUS, BLOOD_B_MINUS,
+			BLOOD_AB_PLUS, BLOOD_AB_MINUS
+		)
+
+		var/target_type = tgui_input_list(usr, "Выберите целевую группу крови:", "Blood Type Reconfiguration", blood_types)
+		if(!target_type || !connected || !connected.occupant)
+			return FALSE
+		if(target_type == H.dna.b_type)
+			return FALSE
+
+		// Lock scanner and irradiate for 30 seconds
+		irradiating = 30
+		var/lock_state = connected.locked
+		connected.locked = 1
+		nanomanager.update_uis(src)
+
+		sleep(30 SECONDS)
+
+		irradiating = 0
+		if(!connected || !connected.occupant)
+			return FALSE
+
+		H = connected.occupant
+		if(!ishuman(H) || !H.dna)
+			connected.locked = lock_state
+			return FALSE
+
+		// Apply heavy radiation and clone damage
+		H.radiation += 50
+		H.adjustCloneLoss(30)
+
+		// Change blood type
+		H.dna.b_type = target_type
+		H.fixblood(FALSE)
+
+		to_chat(H, "<span class='boldwarning'>Ваше тело содрогается, костный мозг начинает пульсировать по-новому...</span>")
+		connected.locked = lock_state
+
 	else if(href_list["ejectBeaker"])
 		if(connected.beaker)
 			var/obj/item/weapon/reagent_containers/glass/B = connected.beaker

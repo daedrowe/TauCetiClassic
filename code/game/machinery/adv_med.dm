@@ -252,6 +252,16 @@
 			if(E.status & ORGAN_ARTERY_CUT)
 				organData["internalBleeding"] = TRUE
 
+			// SE compatibility for transplanted organs
+			organData["isRejecting"] = E.is_rejecting
+			if(E.stored_SE && occupant.dna)
+				var/matching = 0
+				var/total = length(E.stored_SE)
+				for(var/i in 1 to total)
+					if(i <= length(occupant.dna.SE) && E.stored_SE[i] == occupant.dna.SE[i])
+						matching++
+				organData["seCompat"] = total > 0 ? round((matching / total) * 100) : 100
+
 			extOrganData.Add(list(organData))
 
 		for(var/bp_type in occupant.get_missing_bodyparts())
@@ -404,6 +414,15 @@
 			open = "Вскрытое:"
 		if(BP.is_rejecting)
 			rejecting = "Генетическое отторжение:"
+			// Calculate SE compatibility for print
+			if(BP.stored_SE && occupant.dna)
+				var/matching = 0
+				var/total = length(BP.stored_SE)
+				for(var/i in 1 to total)
+					if(i <= length(occupant.dna.SE) && BP.stored_SE[i] == occupant.dna.SE[i])
+						matching++
+				var/se_pct = total > 0 ? round((matching / total) * 100) : 100
+				rejecting += " SE-совместимость [se_pct]%:"
 		if(BP.germ_level >= INFECTION_LEVEL_ONE)
 			infected = "[get_germ_level_name(BP.germ_level)]:"
 

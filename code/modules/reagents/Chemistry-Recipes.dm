@@ -93,6 +93,13 @@
 	required_reagents = list("radium" = 1, "phosphorus" = 1, "chlorine" = 1)
 	result_amount = 3
 
+/datum/chemical_reaction/hemosynthase
+	name = "Hemosynthase"
+	id = "hemosynthase"
+	result = "hemosynthase"
+	required_reagents = list("mutagen" = 1, "clonexadone" = 1, "radium" = 1)
+	result_amount = 1
+
 /datum/chemical_reaction/tramadol
 	name = "Tramadol"
 	id = "tramadol"

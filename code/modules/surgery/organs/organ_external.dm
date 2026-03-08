@@ -33,6 +33,7 @@
 	var/organ_suffix                  // suffix for organs with variations
 	var/datum/species/species
 	var/b_type = BLOOD_A_PLUS
+	var/list/stored_SE          // SE snapshot from original owner for transplant compatibility
 	var/is_rejecting = FALSE
 
 	// Wound and structural data.
@@ -126,6 +127,7 @@
 	..()
 
 	b_type = owner.dna.b_type
+	stored_SE = owner.dna.SE.Copy()
 
 // species for external organs must always exist, our icon depends on it
 /obj/item/organ/external/proc/set_species(datum/species/S)

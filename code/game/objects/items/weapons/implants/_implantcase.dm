@@ -105,3 +105,6 @@
 
 /obj/item/weapon/implantcase/exile
 	init_type = /obj/item/weapon/implant/exile
+
+/obj/item/weapon/implantcase/hemoadaptive
+	init_type = /obj/item/weapon/implant/hemoadaptive
