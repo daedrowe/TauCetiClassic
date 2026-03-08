@@ -676,9 +676,15 @@
 			BLOOD_AB_PLUS, BLOOD_AB_MINUS
 		)
 
-		var/target_type = pick(blood_types)
-		if(target_type == H.dna.b_type)
-			target_type = pick(blood_types - H.dna.b_type)
+		var/target_type
+		if(connected.precision_coeff >= 16)
+			target_type = tgui_input_list(usr, "Выберите целевую группу крови", "Конфигуратор крови", blood_types)
+			if(!target_type || !connected || !connected.occupant || connected.occupant != H || irradiating)
+				return FALSE
+		else
+			target_type = pick(blood_types)
+			if(target_type == H.dna.b_type)
+				target_type = pick(blood_types - H.dna.b_type)
 
 		irradiating = 10
 		var/lock_state = connected.locked
