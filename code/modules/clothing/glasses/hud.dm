@@ -36,6 +36,7 @@
 	..()
 	if(!istype(user) || user.glasses)
 		return
+	clear_surgery_hud_hints(user)
 	disable_hud(user)
 	glasses_user = null
 
@@ -141,6 +142,7 @@
 	..()
 	if(!istype(user) || user.glasses)
 		return
+	clear_surgery_hud_hints(user)
 	glasses_user = null
 	disable_hud(user)
 
