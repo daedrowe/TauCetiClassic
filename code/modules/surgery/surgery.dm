@@ -160,11 +160,31 @@
 	if(!ishuman(target))
 		return
 
-	// Collect unique tool types with best quality from applicable surgery steps
+	// Collect all items nearby: surgeon's hands, adjacent turfs (floor, tables)
+	var/list/nearby_items = list()
+	if(user.l_hand)
+		nearby_items += user.l_hand
+	if(user.r_hand)
+		nearby_items += user.r_hand
+	for(var/turf/T in range(1, target))
+		for(var/obj/item/I in T.contents)
+			nearby_items += I
+			// Check inside storage containers (surgical trays, bags, etc.)
+			if(istype(I, /obj/item/weapon/storage))
+				for(var/obj/item/SI in I.contents)
+					nearby_items += SI
+		// Also check items on tables/surfaces
+		for(var/obj/structure/table/table in T.contents)
+			for(var/obj/item/I in table.contents)
+				nearby_items += I
+				if(istype(I, /obj/item/weapon/storage))
+					for(var/obj/item/SI in I.contents)
+						nearby_items += SI
+
+	// Collect applicable tool types from surgery steps
 	var/list/tool_data = list() // assoc list: tool_type = quality
 
 	for(var/datum/surgery_step/S in surgery_steps)
-		// Some can_use() implementations access tool properties - safely skip those when tool is null
 		var/step_usable = FALSE
 		try
 			step_usable = S.can_use(user, target, target_zone, null)
@@ -182,23 +202,29 @@
 	if(!tool_data.len)
 		return
 
+	// Filter: only keep tool types that have a matching nearby item
+	var/list/available_tools = list() // tool_type = obj/item reference (for icon)
+	for(var/tool_type in tool_data)
+		for(var/obj/item/I in nearby_items)
+			if(istype(I, tool_type))
+				available_tools[tool_type] = I
+				break
+
+	if(!available_tools.len)
+		return
+
 	user.surgery_hud_images = list()
-	var/icon_count = tool_data.len
+	var/icon_count = available_tools.len
 	var/start_x = -((icon_count - 1) * 10) / 2 // center the row of icons
 
 	var/i = 0
-	for(var/tool_type in tool_data)
-		var/tool_icon = initial(tool_type:icon)
-		var/tool_icon_state = initial(tool_type:icon_state)
-
-		if(!tool_icon || !tool_icon_state)
-			continue
-
-		var/image/hint = image(icon = tool_icon, loc = target, icon_state = tool_icon_state, layer = EMOTE_LAYER)
+	for(var/tool_type in available_tools)
+		var/obj/item/real_tool = available_tools[tool_type]
+		// Use the actual item's icon for more accurate representation
+		var/image/hint = image(icon = real_tool.icon, loc = target, icon_state = real_tool.icon_state, layer = EMOTE_LAYER)
 		hint.pixel_y = 34
 		hint.pixel_x = start_x + (i * 20)
 		hint.plane = ABOVE_LIGHTING_PLANE
-		// Reduce icon size to fit nicely as hint icons
 		hint.transform = hint.transform.Scale(0.6, 0.6)
 
 		user.surgery_hud_images += hint
