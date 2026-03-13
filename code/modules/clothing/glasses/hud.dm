@@ -31,6 +31,7 @@
 		return
 	enable_hud(user)
 	glasses_user = user
+	scan_surgery_hud_hints(user)
 
 /obj/item/clothing/glasses/hud/dropped(mob/living/carbon/human/user)
 	..()
@@ -137,6 +138,7 @@
 		return
 	glasses_user = user
 	enable_hud(user)
+	scan_surgery_hud_hints(user)
 
 /obj/item/clothing/glasses/sunglasses/hud/dropped(mob/living/carbon/human/user)
 	..()

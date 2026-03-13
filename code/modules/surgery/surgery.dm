@@ -152,6 +152,19 @@
 			user.client.images -= I
 	user.surgery_hud_images = null
 
+/proc/scan_surgery_hud_hints(mob/living/user)
+	if(!has_medical_hud(user))
+		return
+	var/target_zone = user.get_targetzone()
+	// Find nearest patient with open body part in range
+	for(var/mob/living/carbon/human/H in range(1, user))
+		if(H == user)
+			continue
+		var/obj/item/organ/external/BP = H.get_bodypart(target_zone)
+		if(BP && BP.open)
+			show_surgery_hud_hints(user, H, target_zone)
+			return
+
 /proc/show_surgery_hud_hints(mob/living/user, mob/living/carbon/human/target, target_zone)
 	clear_surgery_hud_hints(user)
 
@@ -247,6 +260,10 @@
 
 	if(!handle_fumbling(user, M, SKILL_TASK_AVERAGE, skillcheck, "<span class='notice'>You fumble around figuring out how to operate [M].</span>"))
 		return
+
+	// Show available tool hints at the start of surgery
+	if(ishuman(M))
+		show_surgery_hud_hints(user, M, target_zone)
 
 	for(var/datum/surgery_step/S in surgery_steps)
 		//check, if target undressed for clothless operations
