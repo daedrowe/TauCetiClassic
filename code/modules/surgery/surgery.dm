@@ -226,6 +226,7 @@
 		hint.pixel_x = start_x + (i * 20)
 		hint.plane = ABOVE_LIGHTING_PLANE
 		hint.transform = hint.transform.Scale(0.6, 0.6)
+		hint.transform = hint.transform.Turn(-90)
 
 		user.surgery_hud_images += hint
 		user.client?.images += hint
