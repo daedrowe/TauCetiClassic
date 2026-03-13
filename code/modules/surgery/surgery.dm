@@ -133,6 +133,78 @@
 
 	return !check_covered_bodypart(T, zone)
 
+/proc/has_medical_hud(mob/living/user)
+	if(!ishuman(user))
+		return FALSE
+	var/mob/living/carbon/human/H = user
+	var/obj/item/clothing/glasses/G = H.glasses
+	if(!G || !G.hud_types)
+		return FALSE
+	if((DATA_HUD_MEDICAL in G.hud_types) || (DATA_HUD_MEDICAL_ADV in G.hud_types))
+		return TRUE
+	return FALSE
+
+/proc/clear_surgery_hud_hints(mob/living/user)
+	if(!user.surgery_hud_images)
+		return
+	if(user.client)
+		for(var/image/I in user.surgery_hud_images)
+			user.client.images -= I
+	user.surgery_hud_images = null
+
+/proc/show_surgery_hud_hints(mob/living/user, mob/living/carbon/human/target, target_zone)
+	clear_surgery_hud_hints(user)
+
+	if(!has_medical_hud(user))
+		return
+	if(!ishuman(target))
+		return
+
+	// Collect unique tool types with best quality from applicable surgery steps
+	var/list/tool_data = list() // assoc list: tool_type = quality
+
+	for(var/datum/surgery_step/S in surgery_steps)
+		// Some can_use() implementations access tool properties - safely skip those when tool is null
+		var/step_usable = FALSE
+		try
+			step_usable = S.can_use(user, target, target_zone, null)
+		catch
+			continue
+		if(!step_usable || !S.is_valid_mutantrace(target))
+			continue
+		if(!S.allowed_tools)
+			continue
+		for(var/tool_type in S.allowed_tools)
+			var/quality = S.allowed_tools[tool_type]
+			if(!tool_data[tool_type] || tool_data[tool_type] < quality)
+				tool_data[tool_type] = quality
+
+	if(!tool_data.len)
+		return
+
+	user.surgery_hud_images = list()
+	var/icon_count = tool_data.len
+	var/start_x = -((icon_count - 1) * 10) / 2 // center the row of icons
+
+	var/i = 0
+	for(var/tool_type in tool_data)
+		var/tool_icon = initial(tool_type:icon)
+		var/tool_icon_state = initial(tool_type:icon_state)
+
+		if(!tool_icon || !tool_icon_state)
+			continue
+
+		var/image/hint = image(icon = tool_icon, loc = target, icon_state = tool_icon_state, layer = EMOTE_LAYER)
+		hint.pixel_y = 34
+		hint.pixel_x = start_x + (i * 20)
+		hint.plane = ABOVE_LIGHTING_PLANE
+		// Reduce icon size to fit nicely as hint icons
+		hint.transform = hint.transform.Scale(0.6, 0.6)
+
+		user.surgery_hud_images += hint
+		user.client?.images += hint
+		i++
+
 /proc/do_surgery(mob/living/carbon/M, mob/living/user, obj/item/tool)
 	checks_for_surgery(M, user, FALSE)
 	var/target_zone = user.get_targetzone()
@@ -180,6 +252,7 @@
 			if(ishuman(M))
 				var/mob/living/carbon/human/H = M
 				H.update_surgery()										//shows surgery results
+				show_surgery_hud_hints(user, H, target_zone)
 			return	TRUE	  												//don't want to do weapony things after surgery
 	return FALSE
 

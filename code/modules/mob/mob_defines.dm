@@ -137,6 +137,7 @@
 	var/list/mapobjs = list()
 
 	var/in_throw_mode = 0
+	var/list/surgery_hud_images // images shown above patient for surgery hints (only visible to this mob)
 
 	var/coughedtime = null
 
