@@ -164,6 +164,16 @@
 						nearby_items += SI
 	return nearby_items
 
+/proc/get_surgery_step_name(datum/surgery_step/S)
+	var/full_type = "[S.type]"
+	var/list/parts = splittext(full_type, "/")
+	var/last = parts[parts.len]
+	last = replacetext(last, "_", " ")
+	// Capitalize first letter
+	if(length(last))
+		last = uppertext(copytext(last, 1, 2)) + copytext(last, 2)
+	return last
+
 /proc/show_surgery_radial_menu(mob/living/user, mob/living/carbon/human/target, target_zone)
 	set waitfor = FALSE
 
@@ -177,8 +187,9 @@
 	// Collect nearby items
 	var/list/nearby_items = collect_nearby_surgery_items(user, target)
 
-	// Collect applicable tool types from surgery steps
-	var/list/tool_data = list() // assoc list: tool_type = quality
+	// For each valid surgery step, collect available nearby tools
+	var/list/step_data = list() // index list of assoc lists: list("step" = S, "tools" = list(tool -> image), "best_tool" = tool, "best_quality" = quality)
+
 	for(var/datum/surgery_step/S in surgery_steps)
 		var/step_usable = FALSE
 		try
@@ -189,48 +200,74 @@
 			continue
 		if(!S.allowed_tools)
 			continue
+
+		var/list/tools_for_step = list() // tool_ref -> image
+		var/obj/item/best_tool = null
+		var/best_quality = 0
+
 		for(var/tool_type in S.allowed_tools)
 			var/quality = S.allowed_tools[tool_type]
-			if(!tool_data[tool_type] || tool_data[tool_type] < quality)
-				tool_data[tool_type] = quality
+			for(var/obj/item/I in nearby_items)
+				if(istype(I, tool_type))
+					if(!tools_for_step[I])
+						tools_for_step[I] = image(icon = I.icon, icon_state = I.icon_state)
+					if(quality > best_quality)
+						best_quality = quality
+						best_tool = I
+					break
 
-	if(!tool_data.len)
+		if(tools_for_step.len && best_tool)
+			step_data += list(list("step" = S, "tools" = tools_for_step, "best_tool" = best_tool, "best_quality" = best_quality))
+
+	if(!step_data.len)
 		return
 
-	// Filter: only keep tool types that have a matching nearby item, sorted by quality desc
-	var/list/available_tools = list() // tool_ref = image (for radial menu)
-	var/list/tool_qualities = list() // tool_ref = quality (for sorting)
-	for(var/tool_type in tool_data)
-		for(var/obj/item/I in nearby_items)
-			if(istype(I, tool_type))
-				if(!available_tools[I]) // avoid duplicates
-					available_tools[I] = image(icon = I.icon, icon_state = I.icon_state)
-					var/quality = tool_data[tool_type]
-					if(!tool_qualities[I] || tool_qualities[I] < quality)
-						tool_qualities[I] = quality
-				break
+	var/obj/item/chosen = null
 
-	if(!available_tools.len)
-		return
+	if(step_data.len == 1)
+		// Only one step — skip step selection
+		var/list/entry = step_data[1]
+		var/list/tools = entry["tools"]
+		if(tools.len == 1)
+			// Only one tool — use it directly
+			chosen = tools[1]
+		else
+			// Multiple tools — show tool selection radial
+			chosen = show_radial_menu(user, target, tools, radius = 36, require_near = TRUE, tooltips = TRUE)
+	else
+		// Multiple steps — show step selection radial (level 1)
+		var/list/step_choices = list() // step_name -> icon
+		var/list/name_to_entry = list() // step_name -> step_data entry
 
-	// Sort by quality (highest first) using simple insertion sort
-	var/list/sorted_tools = list()
-	for(var/obj/item/tool in available_tools)
-		var/quality = tool_qualities[tool]
-		var/inserted = FALSE
-		for(var/j = 1 to sorted_tools.len)
-			var/obj/item/existing = sorted_tools[j]
-			if(quality > tool_qualities[existing])
-				sorted_tools.Insert(j, tool)
-				sorted_tools[tool] = available_tools[tool]
-				inserted = TRUE
-				break
-		if(!inserted)
-			sorted_tools += tool
-			sorted_tools[tool] = available_tools[tool]
+		for(var/list/entry in step_data)
+			var/datum/surgery_step/S = entry["step"]
+			var/obj/item/best = entry["best_tool"]
+			var/step_name = get_surgery_step_name(S)
 
-	// Show radial menu anchored to the patient
-	var/obj/item/chosen = show_radial_menu(user, target, sorted_tools, radius = 36, require_near = TRUE, tooltips = TRUE)
+			// Ensure unique names
+			var/unique_name = step_name
+			var/suffix = 2
+			while(unique_name in step_choices)
+				unique_name = "[step_name] [suffix]"
+				suffix++
+
+			step_choices[unique_name] = image(icon = best.icon, icon_state = best.icon_state)
+			name_to_entry[unique_name] = entry
+
+		var/chosen_step = show_radial_menu(user, target, step_choices, radius = 36, require_near = TRUE, tooltips = TRUE)
+
+		if(!chosen_step || !user.Adjacent(target))
+			return
+
+		var/list/selected_entry = name_to_entry[chosen_step]
+		var/list/tools = selected_entry["tools"]
+
+		if(tools.len == 1)
+			// Only one tool for this step — use it directly
+			chosen = tools[1]
+		else
+			// Multiple tools — show tool selection radial (level 2)
+			chosen = show_radial_menu(user, target, tools, radius = 36, require_near = TRUE, tooltips = TRUE)
 
 	if(!chosen || !user.Adjacent(target))
 		return
