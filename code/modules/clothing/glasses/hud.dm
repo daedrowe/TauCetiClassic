@@ -31,13 +31,11 @@
 		return
 	enable_hud(user)
 	glasses_user = user
-	scan_surgery_hud_hints(user)
 
 /obj/item/clothing/glasses/hud/dropped(mob/living/carbon/human/user)
 	..()
 	if(!istype(user) || user.glasses)
 		return
-	clear_surgery_hud_hints(user)
 	disable_hud(user)
 	glasses_user = null
 
@@ -138,13 +136,11 @@
 		return
 	glasses_user = user
 	enable_hud(user)
-	scan_surgery_hud_hints(user)
 
 /obj/item/clothing/glasses/sunglasses/hud/dropped(mob/living/carbon/human/user)
 	..()
 	if(!istype(user) || user.glasses)
 		return
-	clear_surgery_hud_hints(user)
 	glasses_user = null
 	disable_hud(user)
 

@@ -144,36 +144,7 @@
 		return TRUE
 	return FALSE
 
-/proc/clear_surgery_hud_hints(mob/living/user)
-	if(!user.surgery_hud_images)
-		return
-	if(user.client)
-		for(var/image/I in user.surgery_hud_images)
-			user.client.images -= I
-	user.surgery_hud_images = null
-
-/proc/scan_surgery_hud_hints(mob/living/user)
-	if(!has_medical_hud(user))
-		return
-	var/target_zone = user.get_targetzone()
-	// Find nearest patient with open body part in range
-	for(var/mob/living/carbon/human/H in range(1, user))
-		if(H == user)
-			continue
-		var/obj/item/organ/external/BP = H.get_bodypart(target_zone)
-		if(BP && BP.open)
-			show_surgery_hud_hints(user, H, target_zone)
-			return
-
-/proc/show_surgery_hud_hints(mob/living/user, mob/living/carbon/human/target, target_zone)
-	clear_surgery_hud_hints(user)
-
-	if(!has_medical_hud(user))
-		return
-	if(!ishuman(target))
-		return
-
-	// Collect all items nearby: surgeon's hands, adjacent turfs (floor, tables)
+/proc/collect_nearby_surgery_items(mob/living/user, mob/living/carbon/human/target)
 	var/list/nearby_items = list()
 	if(user.l_hand)
 		nearby_items += user.l_hand
@@ -182,21 +153,32 @@
 	for(var/turf/T in range(1, target))
 		for(var/obj/item/I in T.contents)
 			nearby_items += I
-			// Check inside storage containers (surgical trays, bags, etc.)
 			if(istype(I, /obj/item/weapon/storage))
 				for(var/obj/item/SI in I.contents)
 					nearby_items += SI
-		// Also check items on tables/surfaces
 		for(var/obj/structure/table/table in T.contents)
 			for(var/obj/item/I in table.contents)
 				nearby_items += I
 				if(istype(I, /obj/item/weapon/storage))
 					for(var/obj/item/SI in I.contents)
 						nearby_items += SI
+	return nearby_items
+
+/proc/show_surgery_radial_menu(mob/living/user, mob/living/carbon/human/target, target_zone)
+	set waitfor = FALSE
+
+	if(!has_medical_hud(user))
+		return
+	if(!ishuman(target))
+		return
+	if(!user.client)
+		return
+
+	// Collect nearby items
+	var/list/nearby_items = collect_nearby_surgery_items(user, target)
 
 	// Collect applicable tool types from surgery steps
 	var/list/tool_data = list() // assoc list: tool_type = quality
-
 	for(var/datum/surgery_step/S in surgery_steps)
 		var/step_usable = FALSE
 		try
@@ -215,35 +197,51 @@
 	if(!tool_data.len)
 		return
 
-	// Filter: only keep tool types that have a matching nearby item
-	var/list/available_tools = list() // tool_type = obj/item reference (for icon)
+	// Filter: only keep tool types that have a matching nearby item, sorted by quality desc
+	var/list/available_tools = list() // tool_ref = image (for radial menu)
+	var/list/tool_qualities = list() // tool_ref = quality (for sorting)
 	for(var/tool_type in tool_data)
 		for(var/obj/item/I in nearby_items)
 			if(istype(I, tool_type))
-				available_tools[tool_type] = I
+				if(!available_tools[I]) // avoid duplicates
+					available_tools[I] = image(icon = I.icon, icon_state = I.icon_state)
+					var/quality = tool_data[tool_type]
+					if(!tool_qualities[I] || tool_qualities[I] < quality)
+						tool_qualities[I] = quality
 				break
 
 	if(!available_tools.len)
 		return
 
-	user.surgery_hud_images = list()
-	var/icon_count = available_tools.len
-	var/start_x = -((icon_count - 1) * 10) / 2 // center the row of icons
+	// Sort by quality (highest first) using simple insertion sort
+	var/list/sorted_tools = list()
+	for(var/obj/item/tool in available_tools)
+		var/quality = tool_qualities[tool]
+		var/inserted = FALSE
+		for(var/j = 1 to sorted_tools.len)
+			var/obj/item/existing = sorted_tools[j]
+			if(quality > tool_qualities[existing])
+				sorted_tools.Insert(j, tool)
+				sorted_tools[tool] = available_tools[tool]
+				inserted = TRUE
+				break
+		if(!inserted)
+			sorted_tools += tool
+			sorted_tools[tool] = available_tools[tool]
 
-	var/i = 0
-	for(var/tool_type in available_tools)
-		var/obj/item/real_tool = available_tools[tool_type]
-		// Use the actual item's icon for more accurate representation
-		var/image/hint = image(icon = real_tool.icon, loc = target, icon_state = real_tool.icon_state, layer = EMOTE_LAYER)
-		hint.pixel_y = 34
-		hint.pixel_x = start_x + (i * 20)
-		hint.plane = ABOVE_LIGHTING_PLANE
-		hint.transform = hint.transform.Scale(0.6, 0.6)
-		hint.transform = hint.transform.Turn(-90)
+	// Show radial menu anchored to the patient
+	var/obj/item/chosen = show_radial_menu(user, target, sorted_tools, radius = 36, require_near = TRUE, tooltips = TRUE)
 
-		user.surgery_hud_images += hint
-		user.client?.images += hint
-		i++
+	if(!chosen || !user.Adjacent(target))
+		return
+
+	// Auto-pick up the chosen instrument and perform surgery
+	if(chosen.loc != user) // tool not in hands — pick it up
+		if(!user.put_in_hands(chosen))
+			to_chat(user, "<span class='warning'>You can't pick up [chosen]!</span>")
+			return
+
+	do_surgery(target, user, chosen)
 
 /proc/do_surgery(mob/living/carbon/M, mob/living/user, obj/item/tool)
 	checks_for_surgery(M, user, FALSE)
@@ -261,9 +259,7 @@
 	if(!handle_fumbling(user, M, SKILL_TASK_AVERAGE, skillcheck, "<span class='notice'>You fumble around figuring out how to operate [M].</span>"))
 		return
 
-	// Show available tool hints at the start of surgery
-	if(ishuman(M))
-		show_surgery_hud_hints(user, M, target_zone)
+
 
 	for(var/datum/surgery_step/S in surgery_steps)
 		//check, if target undressed for clothless operations
@@ -296,7 +292,7 @@
 			if(ishuman(M))
 				var/mob/living/carbon/human/H = M
 				H.update_surgery()										//shows surgery results
-				show_surgery_hud_hints(user, H, target_zone)
+				show_surgery_radial_menu(user, H, target_zone)
 			return	TRUE	  												//don't want to do weapony things after surgery
 	return FALSE
 
