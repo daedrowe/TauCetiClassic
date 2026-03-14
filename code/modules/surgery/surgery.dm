@@ -225,15 +225,10 @@
 	var/obj/item/chosen = null
 
 	if(step_data.len == 1)
-		// Only one step — skip step selection
+		// Only one step — skip step selection, show tools directly
 		var/list/entry = step_data[1]
 		var/list/tools = entry["tools"]
-		if(tools.len == 1)
-			// Only one tool — use it directly
-			chosen = tools[1]
-		else
-			// Multiple tools — show tool selection radial
-			chosen = show_radial_menu(user, target, tools, radius = 36, require_near = TRUE, tooltips = TRUE)
+		chosen = show_radial_menu(user, target, tools, radius = 36, require_near = TRUE, tooltips = TRUE)
 	else
 		// Multiple steps — show step selection radial (level 1)
 		var/list/step_choices = list() // step_name -> icon
@@ -297,6 +292,11 @@
 		user.drop_from_inventory(chosen, get_turf(target)) // drop to ground first — resets plane, layer, screen_loc
 		if(!QDELETED(tool_original_loc))
 			chosen.forceMove(tool_original_loc) // then move to original spot (table, tray, floor...)
+		// Aggressively reset visual properties to prevent icon glitches
+		chosen.pixel_x = initial(chosen.pixel_x)
+		chosen.pixel_y = initial(chosen.pixel_y)
+		chosen.layer = initial(chosen.layer)
+		chosen.plane = initial(chosen.plane)
 		chosen.update_icon()
 	if(dropped_item && dropped_item.loc != user)
 		user.put_in_hands(dropped_item)
