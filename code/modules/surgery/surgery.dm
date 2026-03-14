@@ -257,7 +257,10 @@
 
 	// Return the tool to its original location and pick up the dropped item
 	if(tool_original_loc && tool_original_loc != user && chosen.loc == user)
-		user.drop_from_inventory(chosen, tool_original_loc)
+		user.drop_from_inventory(chosen, get_turf(target)) // drop to ground first — resets plane, layer, screen_loc
+		if(!QDELETED(tool_original_loc))
+			chosen.forceMove(tool_original_loc) // then move to original spot (table, tray, floor...)
+		chosen.update_icon()
 	if(dropped_item && dropped_item.loc != user)
 		user.put_in_hands(dropped_item)
 
