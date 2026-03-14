@@ -235,13 +235,31 @@
 	if(!chosen || !user.Adjacent(target))
 		return
 
-	// Auto-pick up the chosen instrument and perform surgery
+	// Remember where the tool was so we can return it after surgery
+	var/atom/tool_original_loc = chosen.loc
+	var/obj/item/dropped_item = null // item we had to drop from hand
+
+	// Auto-pick up the chosen instrument
 	if(chosen.loc != user) // tool not in hands — pick it up
 		if(!user.put_in_hands(chosen))
-			to_chat(user, "<span class='warning'>You can't pick up [chosen]!</span>")
-			return
+			// Both hands full — drop active hand item near the patient, then pick up
+			dropped_item = user.get_active_hand()
+			if(dropped_item)
+				user.drop_from_inventory(dropped_item, get_turf(target))
+			if(!user.put_in_hands(chosen))
+				to_chat(user, "<span class='warning'>You can't pick up [chosen]!</span>")
+				// Pick dropped item back up
+				if(dropped_item)
+					user.put_in_hands(dropped_item)
+				return
 
 	do_surgery(target, user, chosen)
+
+	// Return the tool to its original location and pick up the dropped item
+	if(tool_original_loc && tool_original_loc != user && chosen.loc == user)
+		user.drop_from_inventory(chosen, tool_original_loc)
+	if(dropped_item && dropped_item.loc != user)
+		user.put_in_hands(dropped_item)
 
 /proc/do_surgery(mob/living/carbon/M, mob/living/user, obj/item/tool)
 	checks_for_surgery(M, user, FALSE)
