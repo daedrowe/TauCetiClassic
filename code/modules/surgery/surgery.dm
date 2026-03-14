@@ -191,12 +191,7 @@
 	var/list/step_data = list() // index list of assoc lists: list("step" = S, "tools" = list(tool -> image), "best_tool" = tool, "best_quality" = quality)
 
 	for(var/datum/surgery_step/S in surgery_steps)
-		var/step_usable = FALSE
-		try
-			step_usable = S.can_use(user, target, target_zone, null)
-		catch
-			continue
-		if(!step_usable || !S.is_valid_mutantrace(target))
+		if(!S.is_valid_mutantrace(target))
 			continue
 		if(!S.allowed_tools)
 			continue
@@ -209,6 +204,14 @@
 			var/quality = S.allowed_tools[tool_type]
 			for(var/obj/item/I in nearby_items)
 				if(istype(I, tool_type))
+					// Check can_use with the actual tool to handle steps that inspect tool properties
+					var/step_usable = FALSE
+					try
+						step_usable = S.can_use(user, target, target_zone, I)
+					catch
+						continue
+					if(!step_usable)
+						continue
 					if(!tools_for_step[I])
 						tools_for_step[I] = image(icon = I.icon, icon_state = I.icon_state)
 					if(quality > best_quality)
@@ -291,13 +294,12 @@
 	if(tool_original_loc && tool_original_loc != user && chosen.loc == user)
 		user.drop_from_inventory(chosen, get_turf(target)) // drop to ground first — resets plane, layer, screen_loc
 		if(!QDELETED(tool_original_loc))
-			chosen.forceMove(tool_original_loc) // then move to original spot (table, tray, floor...)
-		// Aggressively reset visual properties to prevent icon glitches
-		chosen.pixel_x = initial(chosen.pixel_x)
-		chosen.pixel_y = initial(chosen.pixel_y)
-		chosen.layer = initial(chosen.layer)
-		chosen.plane = initial(chosen.plane)
-		chosen.update_icon()
+			if(istype(tool_original_loc, /obj/item/weapon/storage))
+				// Use proper storage insertion to update container UI/icons
+				var/obj/item/weapon/storage/S = tool_original_loc
+				S.handle_item_insertion(chosen, prevent_warning = TRUE)
+			else
+				chosen.forceMove(tool_original_loc)
 	if(dropped_item && dropped_item.loc != user)
 		user.put_in_hands(dropped_item)
 
