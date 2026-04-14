@@ -20,6 +20,17 @@
 		part = null
 		qdel(src)
 		return
+	if(istype(W, /obj/item/device/multitool))
+		playsound(src, 'sound/items/screwdriver2.ogg', VOL_EFFECTS_MASTER)
+		user.visible_message("<span class='notice'>[user] перенастраивает [src] в кресло электротерапии.</span>", "<span class='notice'>Вы перенастраиваете [src] в кресло электротерапии.</span>")
+		if(part)
+			part.loc = src.loc
+			part.master = null
+			part = null
+		var/obj/structure/stool/bed/chair/electrotherapy/E = new /obj/structure/stool/bed/chair/electrotherapy(src.loc)
+		E.set_dir(dir)
+		qdel(src)
+		return
 	return
 
 /obj/structure/stool/bed/chair/e_chair/verb/toggle()
