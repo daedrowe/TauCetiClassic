@@ -333,7 +333,11 @@ This function restores all bodyparts.
 	if(!BP)
 		return FALSE
 
-	if(blocked)
+	// Skeleton bodyparts bypass armor - bones are not protected by clothing worn over them.
+	// The skeleton controller already applies its own damage logic (mob_brute_mod x2).
+	// Without this, bulletproof armor (80%) reduces damage so much that bone-flying-off
+	// mechanics almost never trigger, which defeats the purpose of the skeleton species.
+	if(blocked && BP.controller_type != /datum/bodypart_controller/skeleton)
 		damage *= blocked_mult(blocked)
 
 	if(!impact_direction && istype(used_weapon, /obj/item/projectile))
