@@ -5,11 +5,14 @@
 var/global/datum/deathmatch_controller/deathmatch_game
 var/global/list/datum/deathmatch_lobby/deathmatch_lobbies = list()
 
+#define DM_LOBBY_COOLDOWN 30 SECONDS
+
 /datum/deathmatch_controller
 	var/list/datum/deathmatch_map/maps = list()
 	var/list/loadouts = list()
 	var/shared_arena_z = 0
 	var/arena_in_use = FALSE
+	var/list/lobby_cooldowns = list()
 
 /datum/deathmatch_controller/New()
 	..()
@@ -28,6 +31,11 @@ var/global/list/datum/deathmatch_lobby/deathmatch_lobbies = list()
 	if(deathmatch_lobbies[ckey] || find_player_lobby(ckey))
 		to_chat(host, "<span class='warning'>Вы уже в лобби дезматча!</span>")
 		return
+	var/last_created = lobby_cooldowns[ckey]
+	if(last_created && (world.time - last_created) < DM_LOBBY_COOLDOWN)
+		var/remaining = round((DM_LOBBY_COOLDOWN - (world.time - last_created)) / 10)
+		to_chat(host, "<span class='warning'>Подождите ещё [remaining] сек. перед созданием нового лобби.</span>")
+		return
 	// Reserve slot before new() to prevent rapid-click race (new() may sleep internally)
 	deathmatch_lobbies[ckey] = "pending"
 	var/datum/deathmatch_lobby/lobby = new(host)
@@ -35,6 +43,7 @@ var/global/list/datum/deathmatch_lobby/deathmatch_lobbies = list()
 		deathmatch_lobbies -= ckey
 		return
 	deathmatch_lobbies[ckey] = lobby
+	lobby_cooldowns[ckey] = world.time
 	to_chat(host, "<span class='notice'>Вы создали лобби дезматча!</span>")
 	notify_ghosts("Создано лобби Дезматча!", enter_link="<a href='byond://?src=\ref[lobby];join=1'>\[Подключиться\]</a>", source = host, header = "Дезматч")
 	return lobby
