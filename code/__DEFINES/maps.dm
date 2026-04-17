@@ -15,6 +15,7 @@
 #define ZTRAIT_LAVA_RUINS "Lava Ruins"
 #define ZTRAIT_JUNKYARD "Junkyard"
 #define ZTRAIT_SNOWSTORM "Snowstorm"
+#define ZTRAIT_DEATHMATCH "Deathmatch"
 
 // number - bombcap is multiplied by this before being applied to bombs
 #define ZTRAIT_BOMBCAP_MULTIPLIER "Bombcap Multiplier" // todo: not implemented

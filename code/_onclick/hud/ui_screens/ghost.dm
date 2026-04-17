@@ -49,6 +49,14 @@
 	var/mob/dead/observer/G = usr
 	G.mafia_signup()
 
+/atom/movable/screen/ghost/deathmatch
+	name = "Deathmatch"
+	icon_state = "mafia"
+	screen_loc = ui_ghost_deathmatch
+
+/atom/movable/screen/ghost/deathmatch/Click()
+	get_deathmatch_game().tgui_interact(usr)
+
 /atom/movable/screen/ghost/spawners_menu
 	name = "Spawners menu"
 	icon_state = "spawners"

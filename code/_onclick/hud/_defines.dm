@@ -107,6 +107,7 @@
 #define ui_ghost_reenter_corpse  "SOUTH:6,CENTER:16"
 #define ui_ghost_teleport        "SOUTH:6,CENTER+1:16"
 #define ui_ghost_mafia           "SOUTH:6,CENTER+2:16"
+#define ui_ghost_deathmatch      "SOUTH:6,CENTER+3:16"
 #define ui_ghost_spawners_menu   "SOUTH:6,CENTER-4:16"
 
 // AI

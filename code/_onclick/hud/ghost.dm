@@ -10,6 +10,7 @@
 		/atom/movable/screen/ghost/reenter_corpse,
 		/atom/movable/screen/ghost/teleport,
 		/atom/movable/screen/ghost/mafia,
+		/atom/movable/screen/ghost/deathmatch,
 		/atom/movable/screen/ghost/toggle_darkness,
 	))
 
