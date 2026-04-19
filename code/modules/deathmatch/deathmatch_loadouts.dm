@@ -3,45 +3,56 @@
 	var/display_name = ""
 	var/desc = ""
 
+/obj/item/clothing/gloves/insulated/deathmatch_assistant
+	wired = TRUE
+
+/obj/item/clothing/gloves/insulated/deathmatch_assistant/atom_init(mapload, ...)
+	. = ..()
+	cell = new /obj/item/weapon/stock_parts/cell/high(src)
+
 /datum/outfit/deathmatch/assistant
 	name = "Дезматч: Ассистент"
 	display_name = "Ассистент"
-	desc = "Серый комбинезон и тулбокс. Классика."
+	desc = "Серый комбинезон, бронежилет, шлем, станперчатки и тулбокс. Платит бронёй за 2 стана."
 	uniform = /obj/item/clothing/under/color/grey
-	shoes = /obj/item/clothing/shoes/black
+	shoes = /obj/item/clothing/shoes/white
 	back = /obj/item/weapon/storage/backpack
-	r_hand = /obj/item/weapon/melee/baton
-	l_hand = /obj/item/weapon/storage/toolbox/mechanical
-	gloves = /obj/item/clothing/gloves/black
-	suit = /obj/item/clothing/suit/armor/vest/durathread
-	l_pocket = /obj/item/weapon/legcuffs/bola
+	l_hand = /obj/item/weapon/storage/toolbox/electrical
+	suit = /obj/item/clothing/suit/armor/vest
+	head = /obj/item/clothing/head/helmet
+	mask = /obj/item/clothing/mask/gas/coloured
+	gloves = /obj/item/clothing/gloves/insulated/deathmatch_assistant
+	backpack_contents = list(
+		/obj/item/weapon/legcuffs/bola = 1,
+	)
+
+/obj/item/weapon/storage/belt/security/deathmatch
+	startswith = list(/obj/item/device/flash, /obj/item/weapon/grenade/flashbang = 3)
 
 /datum/outfit/deathmatch/security
 	name = "Дезматч: Охранник"
 	display_name = "Охранник"
-	desc = "Бронежилет, шлем, дубинка и дробовик."
+	desc = "Лучшая броня, щит, дубинка, флэш и флэшбэнги. Платит отсутствием оружия за неуязвимость."
 	uniform = /obj/item/clothing/under/rank/security
 	shoes = /obj/item/clothing/shoes/boots
-	gloves = /obj/item/clothing/gloves/black
-	suit = /obj/item/clothing/suit/armor/riot
-	head = /obj/item/clothing/head/helmet/riot
+	suit = /obj/item/clothing/suit/armor/vest/fullbody
+	head = /obj/item/clothing/head/helmet
 	l_hand = /obj/item/weapon/melee/baton
-	r_hand = /obj/item/weapon/gun/projectile/shotgun/combat
-	belt = /obj/item/weapon/storage/belt/security
-	backpack_contents = list(/obj/item/ammo_box/magazine/internal/shotcom = 3)
+	r_hand = /obj/item/weapon/shield/riot
+	belt = /obj/item/weapon/storage/belt/security/deathmatch
 
 /datum/outfit/deathmatch/operative
 	name = "Дезматч: Оперативник"
 	display_name = "Оперативник"
-	desc = "Снаряжение синдиката — арбалет и энерго-меч."
+	desc = "Реконовая броня, термалы и энерго-меч. Платит лысиной за термалы — броня замедляет в ближнем бою."
 	uniform = /obj/item/clothing/under/syndicate
 	shoes = /obj/item/clothing/shoes/boots/combat
 	gloves = /obj/item/clothing/gloves/combat
-	suit = /obj/item/clothing/suit/armor/tactical
+	suit = /obj/item/clothing/suit/armor/syndilight
+	head = /obj/item/clothing/head/helmet/syndilight
 	glasses = /obj/item/clothing/glasses/thermal
-	l_hand = /obj/item/weapon/gun/energy/crossbow
-	r_pocket = /obj/item/weapon/melee/energy/sword
-	back = /obj/item/weapon/storage/backpack
+	l_hand = /obj/item/weapon/melee/energy/sword
+	r_pocket = /obj/item/weapon/reagent_containers/food/snacks/soap
 
 /datum/outfit/deathmatch/engineer
 	name = "Дезматч: Инженер"

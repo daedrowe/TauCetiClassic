@@ -116,7 +116,7 @@
 	spawn_all_players()
 	starting = FALSE
 	playing = DM_PLAYING
-	game_timer = addtimer(CALLBACK(src, PROC_REF(game_timeout)), DM_GAME_TIME, TIMER_STOPPABLE)
+	// game_timer отключён — матч без ограничения времени
 	player_check_timer = addtimer(CALLBACK(src, PROC_REF(check_players_alive)), DM_PLAYER_CHECK, TIMER_STOPPABLE)
 	announce("<span class='boldnotice'>МАТЧ НАЧИНАЕТСЯ!</span>")
 	log_game("Deathmatch game [host] started with [players.len] players on map [current_map.name].")
@@ -178,6 +178,7 @@
 	human_player.gender = C.prefs.gender
 	human_player.real_name = C.prefs.real_name || ckey
 	human_player.name = human_player.real_name
+	human_player.randomize_appearance()
 	var/datum/outfit/deathmatch/loadout_datum = player_info["loadout"]
 	human_player.equipOutfit(loadout_datum ? loadout_datum.type : /datum/outfit/deathmatch/assistant)
 	if(isliving(current_mob) && !QDELING(current_mob))
