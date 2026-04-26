@@ -11,7 +11,17 @@
 	add_overlay(image('icons/obj/objects.dmi', src, "echair_over", MOB_LAYER + 1, dir))
 
 /obj/structure/stool/bed/chair/electrotherapy/attackby(obj/item/weapon/W, mob/user)
-	return
+	if(iswrenching(W))
+		if(buckled_mob)
+			to_chat(user, "<span class='warning'>Сначала отстегните того, кто сидит в кресле!</span>")
+			return
+		playsound(src, 'sound/items/Ratchet.ogg', VOL_EFFECTS_MASTER)
+		user.visible_message("<span class='notice'>[user] разбирает [src].</span>", "<span class='notice'>Вы разбираете [src].</span>")
+		var/obj/structure/stool/bed/chair/C = new /obj/structure/stool/bed/chair(loc)
+		C.set_dir(dir)
+		qdel(src)
+		return
+	return ..(W, user)
 
 /obj/structure/stool/bed/chair/electrotherapy/AltClick(mob/user)
 	if(!user.Adjacent(src))
