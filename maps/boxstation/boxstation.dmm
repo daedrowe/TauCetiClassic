@@ -24461,6 +24461,15 @@
 "aRn" = (
 /turf/simulated/wall,
 /area/station/hallway/secondary/exit)
+"aBI" = (
+/obj/structure/fence/metal{
+	dir = 4
+	},
+/obj/structure/fence/metal{
+	dir = 8
+	},
+/turf/simulated/floor/grass,
+/area/station/hallway/secondary/exit)
 "aRo" = (
 /obj/machinery/light/smart{
 	dir = 8
@@ -30852,11 +30861,15 @@
 	},
 /turf/simulated/floor/plating,
 /area/station/maintenance/engineering)
-"bcn" = (
+"asP" = (
 /obj/machinery/atmospherics/pipe/simple/hidden/supply,
 /obj/machinery/atmospherics/pipe/simple/hidden/scrubbers,
 /obj/structure/stool/bed/chair/metal{
 	dir = 4
+	},
+/obj/machinery/newscaster{
+	pixel_x = -28;
+	pixel_y = 1
 	},
 /turf/simulated/floor,
 /area/station/hallway/secondary/exit)
@@ -36201,7 +36214,8 @@
 /obj/effect/decal/turf_decal/set_damaged,
 /turf/simulated/floor/wood,
 /area/station/security/vacantoffice)
-"blP" = (
+"aCk" = (
+/obj/effect/contest_statue_spawn,
 /obj/structure/flora/ausbushes/grassybush,
 /obj/structure/flora/ausbushes/ywflowers,
 /obj/structure/fence/metal{
@@ -73679,7 +73693,8 @@
 	},
 /turf/simulated/floor/plating,
 /area/station/maintenance/engineering)
-"gHG" = (
+"azc" = (
+/obj/effect/contest_statue_spawn,
 /obj/effect/decal/turf_decal/white{
 	dir = 8;
 	icon_state = "siding_wideplating_line"
@@ -86829,16 +86844,12 @@
 /obj/machinery/atmospherics/pipe/simple/hidden/supply,
 /turf/simulated/floor/plating,
 /area/station/engineering/engine)
-"tHb" = (
+"atX" = (
 /obj/structure/stool/bed/chair/metal{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/hidden/supply,
 /obj/machinery/atmospherics/pipe/simple/hidden/scrubbers,
-/obj/machinery/newscaster{
-	pixel_x = -28;
-	pixel_y = 1
-	},
 /turf/simulated/floor,
 /area/station/hallway/secondary/exit)
 "tHS" = (
@@ -86934,6 +86945,12 @@
 	icon_state = "stairs_middle"
 	},
 /area/station/civilian/chapel)
+"awu" = (
+/obj/effect/contest_statue_spawn,
+/turf/simulated/floor{
+	icon_state = "stairs_middle"
+	},
+/area/station/civilian/chapel)
 "tOb" = (
 /obj/structure/cable{
 	d1 = 2;
@@ -86947,6 +86964,18 @@
 /obj/machinery/status_display,
 /turf/simulated/wall,
 /area/station/hallway/secondary/exit)
+"ari" = (
+/obj/effect/contest_statue_spawn,
+/obj/structure/flora/ausbushes/grassybush,
+/obj/structure/flora/ausbushes/ywflowers,
+/obj/structure/fence/metal{
+	dir = 8
+	},
+/obj/structure/fence/metal{
+	dir = 4
+	},
+/turf/simulated/floor/grass,
+/area/station/hallway/secondary/exit)
 "tQr" = (
 /obj/structure/rack,
 /obj/random/cloth/randomsuit,
@@ -86955,19 +86984,8 @@
 /obj/random_shop_item,
 /turf/simulated/floor,
 /area/station/cargo/storage)
-"tRb" = (
-/obj/structure/flora/ausbushes/grassybush,
-/obj/structure/flora/ausbushes/brflowers,
-/obj/structure/fence/metal{
-	dir = 4
-	},
-/obj/structure/fence/metal{
-	dir = 1
-	},
-/obj/structure/fence/metal{
-	dir = 8
-	},
-/turf/simulated/floor/grass,
+"azL" = (
+/turf/simulated/wall,
 /area/station/hallway/secondary/exit)
 "tRI" = (
 /obj/structure/cable{
@@ -86977,17 +86995,9 @@
 	},
 /turf/simulated/floor,
 /area/station/civilian/locker)
-"tSb" = (
-/obj/structure/flora/ausbushes/grassybush,
-/obj/structure/flora/ausbushes/ppflowers,
-/obj/structure/fence/metal{
-	dir = 8
-	},
-/obj/structure/fence/metal{
-	dir = 4
-	},
-/obj/structure/fence/metal,
-/turf/simulated/floor/grass,
+"asg" = (
+/obj/machinery/status_display,
+/turf/simulated/wall,
 /area/station/hallway/secondary/exit)
 "tSN" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on{
@@ -105280,16 +105290,16 @@ cSb
 fzR
 azh
 aQR
-tRb
-aRn
-blP
+azL
+aBI
+aCk
 tPb
 bnL
 uab
 aRn
 aks
-tPb
-tSb
+ari
+asg
 bnL
 bvK
 aLB
@@ -105537,8 +105547,8 @@ aYS
 bbF
 bfd
 bqU
-bcn
-tHb
+asP
+atX
 boi
 tzb
 bne
@@ -136666,7 +136676,7 @@ aVp
 dZW
 aIU
 xbF
-tMB
+awu
 uEB
 iKb
 bMv
@@ -140532,7 +140542,7 @@ bWu
 htg
 uor
 jJE
-gHG
+azc
 jJE
 xnR
 nHY
