@@ -13,6 +13,8 @@
 
 /obj/machinery/atmospherics/components/unary/portables_connector/atom_init()
 	. = ..()
+	var/datum/gas_mixture/air_contents = AIR1
+	air_contents.volume = 0
 	var/obj/machinery/portable_atmospherics/PA = locate() in loc
 	if(PA)
 		PA.connect(src)
