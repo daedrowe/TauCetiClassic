@@ -188,6 +188,18 @@ Thus, the two variables affect pump operation are set in New():
 	broadcast_status()
 	update_icon()
 
+/obj/machinery/atmospherics/components/binary/pump/CtrlClick(mob/user)
+	if(user.incapacitated() || !Adjacent(user))
+		return
+	set_power_use(!use_power)
+	update_icon()
+
+/obj/machinery/atmospherics/components/binary/pump/AltClick(mob/user)
+	if(user.incapacitated() || !Adjacent(user))
+		return
+	target_pressure = max_pressure_setting
+	update_icon()
+
 /obj/machinery/atmospherics/components/binary/pump/can_unwrench(mob/user)
 	if(..())
 		if(!(stat & NOPOWER) && use_power)

@@ -162,6 +162,19 @@
 	update_icon()
 	updateUsrDialog()
 
+/obj/machinery/atmospherics/components/trinary/filter/CtrlClick(mob/user)
+	if(user.incapacitated() || !Adjacent(user))
+		return
+	use_power = !use_power
+	update_icon()
+
+/obj/machinery/atmospherics/components/trinary/filter/AltClick(mob/user)
+	if(user.incapacitated() || !Adjacent(user))
+		return
+	var/datum/gas_mixture/air1 = AIR1
+	set_flow_rate = air1.volume
+	update_icon()
+
 /obj/machinery/atmospherics/components/trinary/filter/m_filter
 	icon_state = "mmap"
 	initialize_directions = SOUTH|NORTH|EAST
