@@ -12,6 +12,9 @@ ZIPPO
 CIGARETTE PACKETS ARE IN FANCY.DM
 */
 
+// Companion state with the glowing pixels of a lit sprite, e.g. "cigon_ember".
+#define EMBER_STATE_SUFFIX "_ember"
+
 ///////////
 //MATCHES//
 ///////////
@@ -81,19 +84,15 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 	var/smoketime = 300
 	var/chem_volume = 15
 	var/nicotine_per_smoketime = 0.006
-	var/list/ember_standing_overlays
-	var/list/ember_world_overlays
+	light_color = LIGHT_COLOR_FIRE
+	var/ember_light_range = 1.4
+	var/ember_light_power = 0.4
+	var/image/ember_world_overlay
 
 /obj/item/clothing/mask/cigarette/atom_init()
 	. = ..()
 	flags |= NOREACT // so it doesn't react until you light it
 	create_reagents(chem_volume) // making the cigarrete a chemical holder with a maximum volume of 15
-
-/obj/item/clothing/mask/cigarette/Destroy()
-	clear_ember_world_overlay()
-	QDEL_LIST(ember_standing_overlays)
-	ember_standing_overlays = null
-	return ..()
 
 /obj/item/clothing/mask/cigarette/get_current_temperature()
 	if(lit)
@@ -160,59 +159,36 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 		T.visible_message(flavor_text)
 		START_PROCESSING(SSobj, src)
 
-/obj/item/clothing/mask/cigarette/proc/build_ember_overlays(_icon, _state)
-	var/static/list/ember_icons = list()
-	var/cache_key = "[_icon]|[_state]|[icon_off]"
-	var/icon/ember_icon = ember_icons[cache_key]
-	if(!ember_icon)
-		var/icon/off_icon = icon(_icon, icon_off)
-		off_icon.Opaque()
-		ember_icon = icon(_icon, _state)
-		ember_icon.Blend(off_icon, ICON_SUBTRACT)
-		ember_icon.SwapColor("#abbbbb", null)
-		ember_icon.SwapColor("#bbbbbb", null)
-		ember_icon.BecomeAlphaMask()
-		ember_icons[cache_key] = ember_icon
-	var/image/ember = image(ember_icon)
-	ember.color = "#ffb347"
+// What glows, in what colour, and how it breathes is all painted into the
+// companion "_ember" state. No such state, no glow.
+/obj/item/clothing/mask/cigarette/proc/build_ember_overlay(_icon, _state)
+	var/ember_state = "[_state][EMBER_STATE_SUFFIX]"
+	if(!icon_exists(_icon, ember_state))
+		return null
+
+	var/image/ember = image(_icon, icon_state = ember_state)
 	ember.plane = LIGHTING_LAMPS_PLANE
-	ember.appearance_flags = KEEP_APART
-	ember.add_filter("ember_halo", 1, drop_shadow_filter(x = 0, y = 0, size = 1, offset = 0, color = "#E24A2FCC"))
-	ember.alpha = 220
-
-	var/image/local_light = image(ember_icon)
-	local_light.color = "#ff8a32"
-	local_light.plane = DYNAMIC_LIGHTING_PLANE
-	local_light.blend_mode = BLEND_ADD
-	local_light.appearance_flags = RESET_ALPHA | RESET_COLOR | KEEP_APART | NO_CLIENT_COLOR
-	local_light.alpha = 230
-	local_light.add_filter("ember_light", 1, drop_shadow_filter(x = 0, y = 0, size = 8, offset = 4, color = "#FF6A24EE"))
-
-	return list(ember, local_light)
-
-/obj/item/clothing/mask/cigarette/proc/clear_ember_world_overlay()
-	if(!ember_world_overlays)
-		return
-	cut_overlay(ember_world_overlays)
-	QDEL_LIST(ember_world_overlays)
-	ember_world_overlays = null
+	ember.appearance_flags = RESET_COLOR | KEEP_APART
+	return ember
 
 /obj/item/clothing/mask/cigarette/update_world_icon()
 	. = ..()
-	clear_ember_world_overlay()
-	QDEL_LIST(ember_standing_overlays)
-	ember_standing_overlays = null
+	set_light(lit ? ember_light_range : 0, ember_light_power)
+	if(ember_world_overlay)
+		cut_overlay(ember_world_overlay)
+		ember_world_overlay = null
 	if(lit && isturf(loc))
-		ember_world_overlays = build_ember_overlays(icon, icon_state)
-		add_overlay(ember_world_overlays)
+		ember_world_overlay = build_ember_overlay(icon, icon_state)
+		if(ember_world_overlay)
+			add_overlay(ember_world_overlay)
 
 /obj/item/clothing/mask/cigarette/get_standing_overlay(mob/living/carbon/human/H, def_icon_path, sprite_sheet_slot, layer, bloodied_icon_state = null, icon_state_appendix = null)
 	var/mutable_appearance/standing = ..()
 	if(!lit)
 		return standing
-	QDEL_LIST(ember_standing_overlays)
-	ember_standing_overlays = build_ember_overlays(standing.icon, standing.icon_state)
-	standing.add_overlay(ember_standing_overlays)
+	var/image/ember = build_ember_overlay(standing.icon, standing.icon_state)
+	if(ember)
+		standing.add_overlay(ember)
 	return standing
 
 
@@ -513,3 +489,5 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 	icon_on = "syndizippoon"
 	icon_off = "syndizippo"
 	light_color = LIGHT_COLOR_NUKE_OPS
+
+#undef EMBER_STATE_SUFFIX
