@@ -182,7 +182,7 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 		if(ember_world_overlay)
 			add_overlay(ember_world_overlay)
 
-/obj/item/clothing/mask/cigarette/get_standing_overlay(mob/living/carbon/human/H, def_icon_path, sprite_sheet_slot, layer, bloodied_icon_state = null, icon_state_appendix = null)
+/obj/item/clothing/mask/cigarette/get_standing_overlay(mob/living/carbon/human/H, def_icon_path, sprite_sheet_slot, layer, bloodied_icon_state = null, icon_state_appendix = null, spare_icon_path = FALSE)
 	var/mutable_appearance/standing = ..()
 	if(!lit)
 		return standing
