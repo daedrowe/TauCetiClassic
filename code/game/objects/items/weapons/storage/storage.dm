@@ -196,7 +196,7 @@
 	storage_ui.on_open(user)
 	show_to(user)
 
-// Returns TRUE if user can open the storage and opens it. Returns FALSE otherwise.
+// Returns TRUE if user can open the storage; opens it unless check_only is set.
 /obj/item/weapon/storage/proc/try_open(mob/user, check_only = FALSE)
 	if(!user)
 		return FALSE
