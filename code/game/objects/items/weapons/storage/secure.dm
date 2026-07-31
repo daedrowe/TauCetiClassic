@@ -45,7 +45,7 @@
 		tgui_interact(user)
 
 /obj/item/weapon/storage/secure/try_open(mob/user, check_only = FALSE)
-	. = ..(user, check_only)
+	. = ..(user, TRUE)
 	if(!.)
 		return FALSE
 	if(locked)
