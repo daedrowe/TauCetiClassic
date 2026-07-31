@@ -1,14 +1,4 @@
-/datum/emote/human/bow
-	key = "bow"
-
-	message_1p = "Вы кланяетесь."
-	message_3p = "кланяется."
-
-	message_type = SHOWMSG_VISUAL
-
-	required_stat = CONSCIOUS
-	blocklist_traits = list(ELEMENT_TRAIT_ZOMBIE)
-
+// bow now lives in human/interaction.dm: it takes an optional target.
 
 /datum/emote/human/yawn
 	key = "yawn"
