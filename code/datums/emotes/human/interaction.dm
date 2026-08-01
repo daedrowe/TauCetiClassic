@@ -220,11 +220,8 @@
 	message_3p = "даёт пять %target%."
 	message_impaired_reception = "Вы слышите хлопок."
 
-	sound = list('sound/misc/clap_1.ogg', 'sound/misc/clap_2.ogg', 'sound/misc/clap_3.ogg', 'sound/misc/clap_4.ogg')
+	sound = 'sound/effects/snap.ogg'
 	soundless_for_mute = FALSE
-
-/datum/emote/human/interaction/highfive/get_sound(mob/user, intentional)
-	return pick(sound)
 
 /datum/emote/human/interaction/highfive/can_interact_with(mob/living/target)
 	return target.stat == CONSCIOUS && target.is_usable_arm()
@@ -254,7 +251,6 @@
 
 /datum/emote/human/interaction/kiss/can_interact_with(mob/living/target)
 	return target.is_usable_head()
-
 
 /*
  * Across the room.
@@ -320,6 +316,48 @@
 
 /datum/emote/human/interaction/applaud/get_sound(mob/user, intentional)
 	return pick(sound)
+
+/datum/emote/human/interaction/blowkiss
+	key = "blowkiss"
+	name = "Blow a Kiss"
+	description = "Blow them a kiss across the room. Named nobody, you hold one to aim yourself."
+
+	message_1p = "Вы посылаете воздушный поцелуй %target%."
+	message_2p = "посылает вам воздушный поцелуй."
+	message_3p = "посылает воздушный поцелуй %target%."
+
+	message_1p_solo = "Вы складываете губы для воздушного поцелуя."
+	message_3p_solo = "складывает губы для воздушного поцелуя."
+
+	interaction_range = 7
+	// Blown with lips; a free hand is only needed by the branch that hands you one.
+	require_usable_hand = FALSE
+	cooldown = INTERACTION_COOLDOWN
+
+/datum/emote/human/interaction/blowkiss/get_interaction_block_reason(mob/user, mob/living/target, intentional)
+	if(!target)
+		if(user.restrained())
+			return "Вы не можете сделать это, пока связаны."
+
+		if(isliving(user))
+			var/mob/living/L = user
+			if(!L.is_usable_arm())
+				return "Ваши руки не слушаются."
+
+		if(locate(/obj/item/weapon/kiss) in user.get_hand_slots())
+			return "У вас уже готов воздушный поцелуй."
+
+		if(!has_free_hand(user))
+			return "У вас заняты руки."
+
+	return ..()
+
+/datum/emote/human/interaction/blowkiss/do_emote(mob/user, emote_key, intentional, mob/living/target)
+	. = ..()
+	if(target)
+		blow_kiss(user, target, params = null, target_told = TRUE)
+	else
+		user.put_in_hands(new /obj/item/weapon/kiss(user))
 
 
 /*

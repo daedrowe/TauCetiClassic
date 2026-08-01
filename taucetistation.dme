@@ -1164,6 +1164,7 @@
 #include "code\game\objects\items\weapons\handcuffs.dm"
 #include "code\game\objects\items\weapons\hydroponics.dm"
 #include "code\game\objects\items\weapons\janisigns.dm"
+#include "code\game\objects\items\weapons\kiss.dm"
 #include "code\game\objects\items\weapons\kitchen.dm"
 #include "code\game\objects\items\weapons\legcuffs.dm"
 #include "code\game\objects\items\weapons\makeshift.dm"
