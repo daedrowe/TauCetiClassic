@@ -40,7 +40,7 @@
 	canremove = 0
 
 
-/obj/item/clothing/mask/gas/shadowling
+/obj/item/clothing/mask/breath/gas/shadowling
 	name = "chitin mask"
 	desc = "A mask-like formation with slots for facial features. A red film covers the eyes."
 	icon_state = "golem"
