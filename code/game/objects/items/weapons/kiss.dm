@@ -67,8 +67,18 @@
 	return TRUE
 
 /obj/item/projectile/kiss/proc/land_on(mob/living/target)
-	playsound(target, 'sound/effects/kiss.ogg', VOL_EFFECTS_MASTER)
-	target.visible_message("<b>[target]</b> <i>ловит воздушный поцелуй[firer ? " от [firer]" : ""].</i>", ignored_mobs = list(target))
+	// Something disguised as scenery takes it the way scenery would: no sound, no message.
+	if(!target.can_be_interacted_with())
+		return
 
-	if(firer && !(target_told && target == original))
+	if(target.stat != CONSCIOUS)
+		return
+
+	playsound(target, 'sound/effects/kiss.ogg', VOL_EFFECTS_MASTER)
+
+	// The sender's emote already named this target; only somebody it hit instead was told nothing.
+	if(target_told && target == original)
+		return
+
+	if(firer)
 		target.show_message("<b>[firer]</b> <i>посылает вам воздушный поцелуй.</i>", SHOWMSG_VISUAL, "Вы слышите чмок.", SHOWMSG_AUDIO)

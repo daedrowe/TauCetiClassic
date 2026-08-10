@@ -93,6 +93,3 @@
 
 /datum/emote/human/clap/get_sound(mob/living/carbon/human/user, intentional)
  	return pick(sound)
-
-
-// wave and salute now live in human/interaction.dm: they take an optional target.

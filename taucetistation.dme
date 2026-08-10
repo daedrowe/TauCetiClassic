@@ -2594,7 +2594,6 @@
 #include "code\modules\tgui\states\default.dm"
 #include "code\modules\tgui\states\hands.dm"
 #include "code\modules\tgui\states\human_adjacent.dm"
-#include "code\modules\tgui\states\interaction_panel.dm"
 #include "code\modules\tgui\states\interactive_reach.dm"
 #include "code\modules\tgui\states\inventory.dm"
 #include "code\modules\tgui\states\machinery_state.dm"

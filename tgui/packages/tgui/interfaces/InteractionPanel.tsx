@@ -74,7 +74,7 @@ export const InteractionPanel = (props, context) => {
     return (
       <Window width={340} height={460}>
         <Window.Content>
-          <NoticeBox>Nobody to interact with.</NoticeBox>
+          <NoticeBox>Не с кем взаимодействовать.</NoticeBox>
         </Window.Content>
       </Window>
     );
@@ -91,19 +91,19 @@ export const InteractionPanel = (props, context) => {
       <Window.Content scrollable>
         <Section>
           <Box color="label" fontSize="0.85em">
-            Interacting with
+            Взаимодействие с
           </Box>
           <Box fontSize="1.4em" bold>
             {targetName}
           </Box>
         </Section>
         {!!contact.length && (
-          <Section title="Within reach">
+          <Section title="Рядом">
             <GestureGrid items={contact} states={states} onPick={onPick} />
           </Section>
         )}
         {!!distant.length && (
-          <Section title="At a distance">
+          <Section title="На расстоянии">
             <GestureGrid items={distant} states={states} onPick={onPick} />
           </Section>
         )}

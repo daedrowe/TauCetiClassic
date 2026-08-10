@@ -1,5 +1,3 @@
-// bow now lives in human/interaction.dm: it takes an optional target.
-
 /datum/emote/human/yawn
 	key = "yawn"
 

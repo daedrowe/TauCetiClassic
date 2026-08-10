@@ -9,7 +9,7 @@
 #define INTERACTION_COOLDOWN (4 SECONDS)
 
 /datum/emote/human/interaction
-	// English label and tooltip for the interaction panel.
+	// Label and tooltip for the interaction panel.
 	var/name
 	var/description
 
@@ -20,10 +20,17 @@
 	var/message_1p_solo
 	var/message_3p_solo
 
+	// Set on interactions made with the lips: a sealed helmet or a gas mask is in the way.
+	var/require_free_mouth = FALSE
+
 	message_type = SHOWMSG_VISUAL
 	required_stat = CONSCIOUS
 	require_usable_hand = TRUE
 	blocklist_traits = list(ELEMENT_TRAIT_ZOMBIE)
+
+// Whether this mob answers social emotes at all. A mimic pretending to be scenery would out itself.
+/mob/living/proc/can_be_interacted_with()
+	return TRUE
 
 // Whether the target's body allows this interaction at all. Dispatched by the mob tree, not by type checks.
 /datum/emote/human/interaction/proc/can_interact_with(mob/living/target)
@@ -54,6 +61,11 @@
 	if(reason)
 		return reason
 
+	if(require_free_mouth && isliving(user))
+		var/mob/living/L = user
+		if(L.is_mouth_covered())
+			return "Сначала придётся открыть лицо."
+
 	// No target means this is a pre-panel emote used the way it always was, so it keeps
 	// the gate it always had: can_emote and nothing else.
 	if(!target)
@@ -74,7 +86,7 @@
 	if(!in_interaction_range(user, target))
 		return "Слишком далеко."
 
-	if(!can_interact_with(target))
+	if(!target.can_be_interacted_with() || !can_interact_with(target))
 		return "Сейчас не получится."
 
 	return null
@@ -96,6 +108,8 @@
 	var/list/candidates = list()
 	for(var/mob/living/L in view(interaction_range, user))
 		if(L == user)
+			continue
+		if(!L.can_be_interacted_with())
 			continue
 		if(!in_interaction_range(user, L))
 			continue
@@ -167,17 +181,20 @@
  */
 /datum/emote/human/interaction/hug
 	key = "hug"
-	name = "Hug"
-	description = "Wrap your arms around them."
+	name = "Обнять"
+	description = "Обхватить руками."
 
 	message_1p = "Вы обнимаете %target%."
 	message_2p = "обнимает вас."
 	message_3p = "обнимает %target%."
 
+// Touch is where the line is drawn: pointing at a body or saluting the fallen stays fine.
+/datum/emote/human/interaction/hug/can_interact_with(mob/living/target)
+	return target.stat != DEAD
+
 /datum/emote/human/interaction/handshake
 	key = "handshake"
-	name = "Handshake"
-	description = "Shake their hand. They have to be able to answer."
+	name = "Пожать руку"
 
 	message_1p = "Вы жмёте руку %target%."
 	message_2p = "жмёт вам руку."
@@ -188,32 +205,30 @@
 
 /datum/emote/human/interaction/headpat
 	key = "headpat"
-	name = "Headpat"
-	description = "Pat them on the head."
+	name = "Погладить по голове"
 
 	message_1p = "Вы гладите %target% по голове."
 	message_2p = "гладит вас по голове."
 	message_3p = "гладит %target% по голове."
 
 /datum/emote/human/interaction/headpat/can_interact_with(mob/living/target)
-	return target.is_usable_head()
+	return target.stat != DEAD && target.is_usable_head()
 
 /datum/emote/human/interaction/pat
 	key = "pat"
-	name = "Pat"
-	description = "Pat them on the shoulder."
+	name = "Похлопать по плечу"
 
 	message_1p = "Вы хлопаете %target% по плечу."
 	message_2p = "хлопает вас по плечу."
 	message_3p = "хлопает %target% по плечу."
 
 /datum/emote/human/interaction/pat/can_interact_with(mob/living/target)
-	return target.is_usable_arm()
+	return target.stat != DEAD && target.is_usable_arm()
 
 /datum/emote/human/interaction/highfive
 	key = "highfive"
-	name = "High Five"
-	description = "Slap your palm against theirs. They have to be able to answer."
+	name = "Дать пять"
+	description = "Хлопнуть ладонью о ладонь."
 
 	message_1p = "Вы даёте пять %target%."
 	message_2p = "даёт вам пять."
@@ -228,8 +243,8 @@
 
 /datum/emote/human/interaction/fistbump
 	key = "fistbump"
-	name = "Fistbump"
-	description = "Bump your fist against theirs. They have to be able to answer."
+	name = "Стукнуться кулаками"
+	description = "Кулак в кулак."
 
 	message_1p = "Вы стукаетесь кулаками с %target%."
 	message_2p = "стукается с вами кулаками."
@@ -240,25 +255,25 @@
 
 /datum/emote/human/interaction/kiss
 	key = "kiss"
-	name = "Kiss on the Cheek"
-	description = "Kiss them on the cheek."
+	name = "Поцеловать в щёку"
 
 	message_1p = "Вы целуете %target% в щёку."
 	message_2p = "целует вас в щёку."
 	message_3p = "целует %target% в щёку."
 
 	require_usable_hand = FALSE
+	require_free_mouth = TRUE
 
 /datum/emote/human/interaction/kiss/can_interact_with(mob/living/target)
-	return target.is_usable_head()
+	return target.stat != DEAD && target.is_usable_head() && !target.is_mouth_covered()
 
 /*
  * Across the room.
  */
 /datum/emote/human/interaction/beckon
 	key = "beckon"
-	name = "Beckon"
-	description = "Wave them over from a distance."
+	name = "Поманить"
+	description = "Позвать к себе жестом."
 
 	message_1p = "Вы маните %target% рукой."
 	message_2p = "манит вас рукой."
@@ -268,8 +283,8 @@
 
 /datum/emote/human/interaction/point
 	key = "point"
-	name = "Point"
-	description = "Point at them."
+	name = "Указать"
+	description = "Указать на цель пальцем."
 
 	message_1p = "Вы указываете на %target%."
 	message_2p = "указывает на вас."
@@ -279,8 +294,8 @@
 
 /datum/emote/human/interaction/thumbsup
 	key = "thumbsup"
-	name = "Thumbs Up"
-	description = "Show them a thumbs up."
+	name = "Палец вверх"
+	description = "Показать большой палец."
 
 	message_1p = "Вы показываете %target% большой палец."
 	message_2p = "показывает вам большой палец."
@@ -290,8 +305,8 @@
 
 /datum/emote/human/interaction/cheer
 	key = "cheer"
-	name = "Cheer"
-	description = "Cheer them on."
+	name = "Подбодрить"
+	description = "Показать жестом поддержку."
 
 	message_1p = "Вы подбадриваете %target%."
 	message_2p = "подбадривает вас."
@@ -301,8 +316,8 @@
 
 /datum/emote/human/interaction/applaud
 	key = "applaud"
-	name = "Applaud"
-	description = "Applaud them."
+	name = "Аплодировать"
+	description = "Похлопать в ладоши."
 
 	message_1p = "Вы аплодируете %target%."
 	message_2p = "аплодирует вам."
@@ -319,8 +334,8 @@
 
 /datum/emote/human/interaction/blowkiss
 	key = "blowkiss"
-	name = "Blow a Kiss"
-	description = "Blow them a kiss across the room. Named nobody, you hold one to aim yourself."
+	name = "Воздушный поцелуй"
+	description = "Послать поцелуй через комнату."
 
 	message_1p = "Вы посылаете воздушный поцелуй %target%."
 	message_2p = "посылает вам воздушный поцелуй."
@@ -332,6 +347,7 @@
 	interaction_range = 7
 	// Blown with lips; a free hand is only needed by the branch that hands you one.
 	require_usable_hand = FALSE
+	require_free_mouth = TRUE
 	cooldown = INTERACTION_COOLDOWN
 
 /datum/emote/human/interaction/blowkiss/get_interaction_block_reason(mob/user, mob/living/target, intentional)
@@ -367,8 +383,8 @@
  */
 /datum/emote/human/interaction/wave
 	key = "wave"
-	name = "Wave"
-	description = "Wave at them."
+	name = "Помахать"
+	description = "Помахать рукой."
 
 	message_1p = "Вы машете %target%."
 	message_2p = "машет вам."
@@ -381,8 +397,8 @@
 
 /datum/emote/human/interaction/salute
 	key = "salute"
-	name = "Salute"
-	description = "Salute them."
+	name = "Отдать честь"
+	description = "Официальное приветствие."
 
 	message_1p = "Вы салютуете %target%."
 	message_2p = "салютует вам."
@@ -398,8 +414,8 @@
 
 /datum/emote/human/interaction/bow
 	key = "bow"
-	name = "Bow"
-	description = "Bow to them."
+	name = "Поклониться"
+	description = "Склониться в знак уважения."
 
 	message_1p = "Вы кланяетесь %target%."
 	message_2p = "кланяется вам."
