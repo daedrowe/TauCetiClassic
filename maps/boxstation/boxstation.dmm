@@ -10439,6 +10439,12 @@
 /obj/item/clothing/glasses/meson,
 /turf/simulated/floor/plating,
 /area/station/storage/emergency3)
+"arh" = (
+/obj/machinery/light/small{
+	dir = 1
+	},
+/turf/simulated/floor/plating,
+/area/station/storage/emergency3)
 "arj" = (
 /obj/machinery/atmospherics/pipe/simple/hidden/scrubbers{
 	dir = 6
@@ -57516,16 +57522,6 @@
 /obj/effect/spawner/parkflora,
 /turf/simulated/floor/grass,
 /area/station/civilian/garden)
-"ccR" = (
-/obj/structure/rack,
-/obj/item/clothing/suit/fire/firefighter,
-/obj/item/weapon/tank/oxygen,
-/obj/item/clothing/mask/breath/gas/coloured,
-/obj/item/weapon/reagent_containers/spray/extinguisher,
-/obj/item/clothing/head/hardhat/red,
-/obj/item/clothing/glasses/meson,
-/turf/simulated/floor/plating,
-/area/station/storage/emergency3)
 "ccT" = (
 /obj/machinery/door/airlock/glass{
 	dir = 4;
@@ -68729,13 +68725,6 @@
 	icon_state = "Stairs2_wide"
 	},
 /area/station/civilian/garden)
-"cIQ" = (
-/obj/structure/rack,
-/obj/item/clothing/mask/breath/gas/coloured,
-/obj/item/clothing/glasses/sunglasses,
-/obj/effect/decal/turf_decal/set_damaged,
-/turf/simulated/floor/plating,
-/area/station/maintenance/medbay)
 "cIR" = (
 /obj/machinery/atmospherics/pipe/simple/hidden/supply{
 	dir = 9
@@ -134140,7 +134129,7 @@ bew
 rBb
 cac
 cac
-aoS
+baG
 bDL
 cGF
 aaa
@@ -134397,7 +134386,7 @@ aGG
 cak
 cak
 aHG
-cIQ
+aoS
 jhb
 bFo
 aaa
@@ -135937,7 +135926,7 @@ cak
 mUb
 lOb
 cbz
-arg
+arh
 cer
 cfB
 cer
@@ -136194,7 +136183,7 @@ bFo
 bFo
 lOb
 cbz
-ccR
+arg
 cew
 cfD
 cya
