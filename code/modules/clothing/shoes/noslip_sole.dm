@@ -10,11 +10,11 @@
 	if(istype(S, /obj/item/clothing/shoes/magboots))
 		to_chat(user, "<span class='warning'>The soles won't fit over the magnetic boots.</span>")
 		return FALSE
-	if(S.clothing_traits && (TRAIT_NOSLIP in S.clothing_traits))
-		to_chat(user, "<span class='warning'>\The [S] already have good grip.</span>")
-		return FALSE
 	if(locate(/obj/item/noslip_sole) in S)
 		to_chat(user, "<span class='warning'>\The [S] already have soles attached.</span>")
+		return FALSE
+	if(TRAIT_NOSLIP in S.clothing_traits)
+		to_chat(user, "<span class='warning'>\The [S] already have good grip.</span>")
 		return FALSE
 	return TRUE
 
@@ -32,12 +32,11 @@
 
 /obj/item/clothing/shoes/AltClick(mob/user)
 	var/obj/item/noslip_sole/sole = locate() in src
-	if(!sole || !Adjacent(user) || user.incapacitated())
+	if(!sole || !isliving(user) || !Adjacent(user) || user.incapacitated() || !user.IsAdvancedToolUser())
 		return ..()
 	detach_clothing_traits(TRAIT_NOSLIP)
 	user.put_in_hands(sole)
 	to_chat(user, "<span class='notice'>You pry \the [sole] off \the [src].</span>")
-	return
 
 /obj/item/noslip_sole/Destroy()
 	var/obj/item/clothing/shoes/S = loc
