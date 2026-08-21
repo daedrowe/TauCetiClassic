@@ -14,3 +14,9 @@
 
 // Maximum number of Cargo Guard slots the edict can ever scale up to.
 #define CARGO_GUARD_MAX 4
+
+// Maximum extra time the round end may wait for edict persistence before rebooting anyway.
+#define EDICT_ROUND_END_GRACE_PERIOD (30 SECONDS)
+
+// Delay before the single retry of a failed round-end edict database operation.
+#define EDICT_PERSISTENCE_RETRY_DELAY (5 SECONDS)

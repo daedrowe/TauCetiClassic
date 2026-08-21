@@ -269,7 +269,7 @@ CREATE TABLE `edicts` (
   `actor_ckey` varchar(32) NOT NULL,
   `actor_character_name` varchar(64) NOT NULL,
   `name` varchar(32) NOT NULL,
-  `active` tinyint(1) NOT NULL,
+  `value` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_server_name` (`server_port`,`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

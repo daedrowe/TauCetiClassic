@@ -8,6 +8,8 @@ SUBSYSTEM_DEF(edicts)
 
 	// EDICT_* key -> /datum/edict instance.
 	var/list/edicts = list()
+	var/round_end_in_progress = FALSE
+	var/round_end_failed = FALSE
 
 /datum/controller/subsystem/edicts/Initialize(timeofday)
 	for(var/etype in subtypesof(/datum/edict))
@@ -22,6 +24,9 @@ SUBSYSTEM_DEF(edicts)
 
 /datum/controller/subsystem/edicts/proc/on_round_start()
 	SIGNAL_HANDLER
+	INVOKE_ASYNC(src, PROC_REF(process_round_start))
+
+/datum/controller/subsystem/edicts/proc/process_round_start()
 	for(var/key in edicts)
 		var/datum/edict/E = edicts[key]
 		if(E.blocked_on_map())
@@ -30,8 +35,17 @@ SUBSYSTEM_DEF(edicts)
 
 /datum/controller/subsystem/edicts/proc/on_round_end()
 	SIGNAL_HANDLER
+	round_end_in_progress = TRUE
+	round_end_failed = FALSE
+	INVOKE_ASYNC(src, PROC_REF(persist_round_end))
+
+/datum/controller/subsystem/edicts/proc/persist_round_end()
 	for(var/key in edicts)
 		var/datum/edict/E = edicts[key]
 		if(E.blocked_on_map())
 			continue
-		E.on_round_end()
+		if(E.on_round_end() == FALSE)
+			round_end_failed = TRUE
+	if(round_end_failed)
+		warning("One or more edicts failed round-end persistence.")
+	round_end_in_progress = FALSE

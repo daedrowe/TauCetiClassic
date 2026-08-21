@@ -6,7 +6,7 @@
  * port. The database is shared between servers, but each server keeps an independent edict history.
  * Never UPDATE existing rows - always INSERT a new one.
  *
- * The `active` column stores an integer VALUE, not just a flag: 0 means the edict is off, and a
+ * The `value` column stores an integer value, not just a flag: 0 means the edict is off, and a
  * positive number is a magnitude (for Cargo Guard - the number of guard slots, see cargo_guard/).
  *
  * Each edict is a `/datum/edict` subtype that owns its own round-start/round-end behaviour; the
@@ -30,7 +30,7 @@ var/global/list/available_edicts = list(
 
 // Round end hook (COMSIG_TICKER_DECLARE_COMPLETION). Recompute and persist the edict's value here.
 /datum/edict/proc/on_round_end()
-	return
+	return TRUE
 
 // TRUE if the current map opted out of this edict (see /datum/map_config.blocked_edicts). SSedicts
 // skips a blocked edict's round hooks, and the edict's job should also gate on this in map_check().
@@ -56,33 +56,53 @@ var/global/list/available_edicts = list(
 				return F
 	return null
 
-// Returns the edict's current value (the `active` number of its most recent row). 0 on any
-// failure (no DB, no history) - i.e. an edict that was never set reads as 0/off.
+// Returns the edict's current value. 0 means there is no history; null means the lookup failed.
 /proc/get_edict_value(edict_name)
 	if(!available_edicts[edict_name])
 		stack_trace("Attempted to retrieve invalid edict: `[edict_name]`")
-		return 0
+		return null
 
 	if(!establish_db_connection("edicts"))
-		return 0
+		return null
 
-	var/DBQuery/query = dbcon.NewQuery("SELECT active FROM edicts WHERE server_port = [sanitize_sql(world.port)] AND name = '[sanitize_sql(edict_name)]' ORDER BY id DESC LIMIT 1")
+	var/DBQuery/query = dbcon.NewQuery("SELECT `value` FROM edicts WHERE server_port = [sanitize_sql(world.port)] AND name = '[sanitize_sql(edict_name)]' ORDER BY id DESC LIMIT 1")
 	if(!query.Execute())
-		return 0
+		return null
 	if(!query.NextRow())
 		return 0
 
-	return text2num(query.item[1])
+	var/raw_value = query.item[1]
+	var/static/regex/integer_value = regex(@"^-?[0-9]+$")
+	if(!istext(raw_value) || !integer_value.Find(raw_value))
+		stack_trace("Edict `[edict_name]` has a non-integer database value: `[raw_value]`")
+		return null
+
+	return text2num(raw_value)
 
 // Convenience boolean: is the edict on at all (value > 0)?
 /proc/is_edict_active(edict_name)
-	return get_edict_value(edict_name) > 0
+	var/value = get_edict_value(edict_name)
+	return !isnull(value) && value > 0
+
+// Round-end persistence runs asynchronously and may sleep while retrying a transient DB failure.
+/proc/get_edict_value_with_retry(edict_name)
+	var/value = get_edict_value(edict_name)
+	if(!isnull(value))
+		return value
+	sleep(EDICT_PERSISTENCE_RETRY_DELAY)
+	value = get_edict_value(edict_name)
+	if(isnull(value))
+		warning("Failed to read edict `[edict_name]` after retry.")
+	return value
 
 // Writes a new state row setting the edict's value. `actor` is whoever caused the change
 // (may be null for automatic/system changes, e.g. survivor-count revocation).
 /proc/set_edict_value(edict_name, value, mob/actor)
 	if(!available_edicts[edict_name])
 		stack_trace("Attempted to set invalid edict: `[edict_name]`")
+		return FALSE
+	if(!isnum(value) || value != round(value))
+		stack_trace("Attempted to set edict `[edict_name]` to non-integer value: `[value]`")
 		return FALSE
 
 	if(!establish_db_connection("edicts"))
@@ -91,6 +111,15 @@ var/global/list/available_edicts = list(
 	var/actor_ckey = actor ? actor.ckey : ""
 	var/actor_name = actor ? actor.real_name : "system"
 
-	var/DBQuery/query = dbcon.NewQuery("INSERT INTO edicts (datetime, round_id, server_port, actor_ckey, actor_character_name, name, active) \
+	var/DBQuery/query = dbcon.NewQuery("INSERT INTO edicts (datetime, round_id, server_port, actor_ckey, actor_character_name, name, `value`) \
 		VALUES (Now(), [global.round_id], [sanitize_sql(world.port)], '[sanitize_sql(actor_ckey)]', '[sanitize_sql(actor_name)]', '[sanitize_sql(edict_name)]', [value])")
-	return query.Execute()
+	return !!query.Execute()
+
+/proc/set_edict_value_with_retry(edict_name, value, mob/actor)
+	if(set_edict_value(edict_name, value, actor))
+		return TRUE
+	sleep(EDICT_PERSISTENCE_RETRY_DELAY)
+	if(set_edict_value(edict_name, value, actor))
+		return TRUE
+	warning("Failed to persist edict `[edict_name]` after retry.")
+	return FALSE

@@ -5,9 +5,8 @@
  *                    edict is active this shift, spawns the reminder sheets (QM office + bridge).
  * on_round_end()   - activates or revokes the edict in the DB based on what happened this shift.
  *
- * "End of shift / shuttle arrival at CentComm" is the round-end moment: players who escaped on the
- * emergency shuttle are on a CentComm z-level (is_centcom_level), which is how we read "alive on the
- * shuttle at CC".
+ * "End of shift / shuttle arrival at CentComm" is the round-end moment. Each rule below explicitly
+ * checks either arrival at CentComm or presence aboard the main emergency shuttle, as appropriate.
  */
 /datum/edict/cargo_guard
 	name = EDICT_CARGO_GUARD
@@ -23,7 +22,8 @@
 	requested = FALSE
 	COOLDOWN_START(src, request_window, CARGO_GUARD_REQUEST_WINDOW)
 
-	if(!is_edict_active(EDICT_CARGO_GUARD))
+	var/guard_amount = get_edict_value(EDICT_CARGO_GUARD)
+	if(isnull(guard_amount) || guard_amount <= 0)
 		return
 
 	var/obj/machinery/computer/cargo/qm/console = locate() in global.cargo_consoles
@@ -35,39 +35,45 @@
 		qdel(bridge_copy)
 
 // Round end: recompute the edict's value - the number of Cargo Guard slots - per the scaling rules.
-// Below the population floor the law cannot change at all. Any failure is a FULL reset to 0; growth
-// is at most +1 per shift and is gated on the QM requesting it and cargo affording the next slot.
+// Below the population floor the law cannot change at all. Funding, balance and repeal rules can
+// fully reset it; growth is at most +1 per shift and requires the QM's request and sufficient funds.
 /datum/edict/cargo_guard/on_round_end()
-	if(num_players() < CARGO_GUARD_MIN_POP)
-		return
+	if(count_living_players() < CARGO_GUARD_MIN_POP)
+		return TRUE
 
-	var/guard_amount = get_edict_value(EDICT_CARGO_GUARD)
+	var/guard_amount = get_edict_value_with_retry(EDICT_CARGO_GUARD)
+	if(isnull(guard_amount))
+		return FALSE
 	if(!global.cargo_account)
-		return // no economy to evaluate - leave the law unchanged instead of resetting it
+		return TRUE // no economy to evaluate - leave the law unchanged instead of resetting it
 	var/money = global.cargo_account.money
 
 	if(guard_amount > 0)
 		// 1. Cargo can no longer fund the guards it has -> full reset.
 		if(money < guard_amount * CARGO_GUARD_PRICE)
-			set_edict_value(EDICT_CARGO_GUARD, 0)
-			return
+			return set_edict_value_with_retry(EDICT_CARGO_GUARD, 0)
 		// 2. More security escaped than cargo -> full reset.
 		var/cargo = count_escapees_with_role(list(JOB_QM, JOB_CARGO_TECH, JOB_MINER, JOB_RECYCLER, JOB_CARGO_PSC))
 		var/security = count_escapees_with_role(list(JOB_OFFICER, JOB_HOS, JOB_WARDEN))
 		if(cargo < security)
-			set_edict_value(EDICT_CARGO_GUARD, 0)
-			return
+			return set_edict_value_with_retry(EDICT_CARGO_GUARD, 0)
 		// 3. Command delivered the stamped repeal and arrested the guard -> full reset.
 		if(command_revoke_satisfied())
-			set_edict_value(EDICT_CARGO_GUARD, 0)
-			return
+			return set_edict_value_with_retry(EDICT_CARGO_GUARD, 0)
 
 	// 4. Growth: the QM requested another slot, cargo can fund N+1, and we're below the cap (+1 only).
 	if(guard_amount < CARGO_GUARD_MAX && money >= (guard_amount + 1) * CARGO_GUARD_PRICE)
 		var/mob/qm = find_qm_with_form_at_centcom()
 		if(qm)
-			set_edict_value(EDICT_CARGO_GUARD, guard_amount + 1, qm)
+			return set_edict_value_with_retry(EDICT_CARGO_GUARD, guard_amount + 1, qm)
 	// else: value unchanged - the law is simply maintained for another shift.
+	return TRUE
+
+/datum/edict/cargo_guard/proc/count_living_players()
+	. = 0
+	for(var/mob/living/player in global.player_list)
+		if(player.client && player.stat != DEAD)
+			.++
 
 // The QM personally delivered the request form to CentComm, alive and not under arrest. Returns the
 // QM mob (used as the actor for the DB record), or null.
@@ -87,7 +93,7 @@
 	return null
 
 // Command revocation: an edict sheet stamped by Captain + HoS sits at CentComm, both of them are
-// alive at CC, and every living cargo guard is handcuffed aboard the emergency shuttle.
+// alive aboard the main emergency shuttle, and every living cargo guard is handcuffed there.
 /datum/edict/cargo_guard/proc/command_revoke_satisfied()
 	var/sheet_delivered = FALSE
 	for(var/obj/item/weapon/paper/cargo_guard_edict/P in global.cargo_guard_edict_papers)
@@ -100,9 +106,9 @@
 	if(!sheet_delivered)
 		return FALSE
 
-	if(!head_alive_at_centcom(JOB_CAPTAIN))
+	if(!head_alive_on_escape_shuttle(JOB_CAPTAIN))
 		return FALSE
-	if(!head_alive_at_centcom(JOB_HOS))
+	if(!head_alive_on_escape_shuttle(JOB_HOS))
 		return FALSE
 
 	return all_guards_arrested_on_shuttle()
@@ -120,14 +126,13 @@
 		if(T && is_centcom_level(T.z))
 			.++
 
-/datum/edict/cargo_guard/proc/head_alive_at_centcom(role)
+/datum/edict/cargo_guard/proc/head_alive_on_escape_shuttle(role)
 	for(var/mob/living/carbon/human/H in global.human_list)
 		if(H.stat == DEAD || !H.mind)
 			continue
 		if(H.mind.assigned_role != role)
 			continue
-		var/turf/T = get_turf(H)
-		if(T && is_centcom_level(T.z))
+		if(istype(get_area(H), /area/shuttle/escape))
 			return TRUE
 	return FALSE
 
@@ -136,7 +141,7 @@
 /datum/edict/cargo_guard/proc/all_guards_arrested_on_shuttle()
 	var/found = FALSE
 	for(var/mob/living/carbon/human/H in global.human_list)
-		if(!H.mind || H.mind.assigned_role != JOB_CARGO_PSC)
+		if(!H.mind || (H.mind.assigned_role != JOB_CARGO_PSC && H.mind.role_alt_title != JOB_CARGO_PSC))
 			continue
 		if(H.stat == DEAD)
 			continue

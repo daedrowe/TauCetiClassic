@@ -88,7 +88,7 @@
 /datum/job/mining
 	title = JOB_MINER
 	departments = list(DEP_CIVILIAN)
-	order = CREW_INTEND_EMPLOYEE(3)
+	order = CREW_INTEND_EMPLOYEE(4)
 	total_positions = 3
 	spawn_positions = 3
 	supervisors = "the quartermaster and the head of personnel"
@@ -106,7 +106,7 @@
 /datum/job/recycler
 	title = JOB_RECYCLER
 	departments = list(DEP_CIVILIAN)
-	order = CREW_INTEND_EMPLOYEE(4)
+	order = CREW_INTEND_EMPLOYEE(5)
 	total_positions = 2
 	spawn_positions = 2
 	supervisors = "the quartermaster and the head of personnel"
@@ -131,7 +131,7 @@
 /datum/job/bartender
 	title = JOB_BARTENDER
 	departments = list(DEP_CIVILIAN)
-	order = CREW_INTEND_EMPLOYEE(5)
+	order = CREW_INTEND_EMPLOYEE(6)
 	total_positions = 1
 	spawn_positions = 1
 	supervisors = "the head of personnel"
@@ -152,7 +152,7 @@
 /datum/job/chef
 	title = JOB_CHEF
 	departments = list(DEP_CIVILIAN)
-	order = CREW_INTEND_EMPLOYEE(6)
+	order = CREW_INTEND_EMPLOYEE(7)
 	total_positions = 2
 	spawn_positions = 2
 	supervisors = "the head of personnel"
@@ -179,7 +179,7 @@
 /datum/job/hydro
 	title = JOB_HYDRO
 	departments = list(DEP_CIVILIAN)
-	order = CREW_INTEND_EMPLOYEE(7)
+	order = CREW_INTEND_EMPLOYEE(8)
 	total_positions = 3
 	spawn_positions = 2
 	supervisors = "the head of personnel"
@@ -195,7 +195,7 @@
 /datum/job/janitor
 	title = JOB_JANITOR
 	departments = list(DEP_CIVILIAN)
-	order = CREW_INTEND_EMPLOYEE(8)
+	order = CREW_INTEND_EMPLOYEE(9)
 	total_positions = 1
 	spawn_positions = 1
 	supervisors = "the head of personnel"
@@ -211,7 +211,7 @@
 /datum/job/barber
 	title = JOB_BARBER
 	departments = list(DEP_CIVILIAN)
-	order = CREW_INTEND_EMPLOYEE(9)
+	order = CREW_INTEND_EMPLOYEE(10)
 	total_positions = 1
 	spawn_positions = 1
 	supervisors = "the head of personnel"
@@ -227,7 +227,7 @@
 /datum/job/librarian
 	title = JOB_LIBRARIAN
 	departments = list(DEP_CIVILIAN)
-	order = CREW_INTEND_EMPLOYEE(10)
+	order = CREW_INTEND_EMPLOYEE(11)
 	total_positions = 1
 	spawn_positions = 1
 	supervisors = "the head of personnel"
@@ -242,7 +242,7 @@
 /datum/job/clown
 	title = JOB_CLOWN
 	departments = list(DEP_CIVILIAN)
-	order = CREW_INTEND_EMPLOYEE(11)
+	order = CREW_INTEND_EMPLOYEE(12)
 	title = "Clown"
 	total_positions = 1
 	spawn_positions = 1
@@ -265,7 +265,7 @@
 /datum/job/mime
 	title = JOB_MIME
 	departments = list(DEP_CIVILIAN)
-	order = CREW_INTEND_EMPLOYEE(12)
+	order = CREW_INTEND_EMPLOYEE(13)
 	total_positions = 1
 	spawn_positions = 1
 	supervisors = "the head of personnel"
@@ -288,7 +288,7 @@
 /datum/job/chaplain
 	title = JOB_CHAPLAIN
 	departments = list(DEP_CIVILIAN)
-	order = CREW_INTEND_EMPLOYEE(13)
+	order = CREW_INTEND_EMPLOYEE(14)
 	total_positions = 1
 	spawn_positions = 1
 	supervisors = "the head of personnel"

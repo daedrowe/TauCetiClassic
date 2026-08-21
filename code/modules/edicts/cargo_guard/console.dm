@@ -4,11 +4,14 @@
 /obj/machinery/computer/cargo/qm/extra_menu_html(mob/user)
 	. = ""
 	var/datum/edict/cargo_guard/E = get_edict(EDICT_CARGO_GUARD)
-	if(!E)
+	if(!E || E.blocked_on_map())
 		return
 	var/guard_amount = get_edict_value(EDICT_CARGO_GUARD)
 	. += "<HR><B>Указ «ЧОП Карго»</B><BR>"
+	if(isnull(guard_amount))
+		return . + "<font color='gray'>Данные указа временно недоступны.</font><BR>"
 	. += "Слотов ЧОП: [guard_amount] из [CARGO_GUARD_MAX]. Содержание к концу смены: [guard_amount * CARGO_GUARD_PRICE]$.<BR>"
+	. += "<font color='gray'>Число слотов изменяется только при населении не менее [CARGO_GUARD_MIN_POP] живых игроков к концу смены.</font><BR>"
 	if(guard_amount >= CARGO_GUARD_MAX)
 		return . + "Достигнут максимум слотов.<BR>"
 	if(E.requested)
@@ -16,6 +19,8 @@
 	if(COOLDOWN_FINISHED(E, request_window))
 		return . + "<font color='gray'>Окно заявки закрыто (первые 15 минут смены).</font><BR>"
 	. += "Для +1 слота держать к концу смены: [(guard_amount + 1) * CARGO_GUARD_PRICE]$.<BR>"
+	if(!user || !user.mind || user.mind.assigned_role != JOB_QM)
+		return . + "<font color='gray'>Оформить заявку может только квартирмейстер.</font><BR>"
 	. += "<A href='byond://?src=\ref[src];request_cargo_guard=1'>ЗАПРОСИТЬ +1 ЧОП НА БУДУЩИЕ СМЕНЫ</A><BR>"
 
 /obj/machinery/computer/cargo/qm/Topic(href, href_list)
@@ -27,10 +32,13 @@
 		updateUsrDialog()
 
 /obj/machinery/computer/cargo/qm/proc/request_cargo_guard(mob/user)
-	var/datum/edict/cargo_guard/E = get_edict(EDICT_CARGO_GUARD)
-	if(!E || E.requested)
+	if(!user || !user.mind || user.mind.assigned_role != JOB_QM)
 		return
-	if(get_edict_value(EDICT_CARGO_GUARD) >= CARGO_GUARD_MAX)
+	var/datum/edict/cargo_guard/E = get_edict(EDICT_CARGO_GUARD)
+	if(!E || E.blocked_on_map() || E.requested)
+		return
+	var/guard_amount = get_edict_value(EDICT_CARGO_GUARD)
+	if(isnull(guard_amount) || guard_amount >= CARGO_GUARD_MAX)
 		return
 	if(COOLDOWN_FINISHED(E, request_window))
 		return
@@ -45,4 +53,4 @@
 	else
 		qdel(copy)
 		copy_line = "<font color='red'>Командный факс не найден — копия не распечатана.</font>"
-	temp = "Заявка на +1 ЧОП оформлена. Квартирмейстер должен лично доставить эту форму на ЦК к концу смены живым и не под арестом, а карго — удержать на счету нужную сумму. [copy_line]<BR><BR><A href='byond://?src=\ref[src];mainmenu=1'>OK</A>"
+	temp = "Заявка на +1 ЧОП оформлена. Квартирмейстер должен лично доставить эту форму на ЦК к концу смены живым и не под арестом, а карго — удержать на счету нужную сумму. Изменение применится только при населении не менее [CARGO_GUARD_MIN_POP] живых игроков к концу смены. [copy_line]<BR><BR><A href='byond://?src=\ref[src];mainmenu=1'>OK</A>"
