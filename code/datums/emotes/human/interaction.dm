@@ -98,26 +98,39 @@
 
 	return null
 
+// Never sleeps itself: emote() is reachable from signal handlers, so the contact
+// windup runs through INVOKE_ASYNC.
 /datum/emote/human/interaction/proc/try_interact(mob/user, mob/living/target, intentional = TRUE)
 	var/reason = get_interaction_block_reason(user, target, intentional)
-
-	if(!reason && target && interaction_range <= 1)
-		target.show_message("<b>[user]</b> <i>тянется к вам.</i>", SHOWMSG_VISUAL)
-		if(!do_mob(user, target, INTERACTION_CONTACT_DELAY))
-			return FALSE
-		// The world had time to move on: the target may have squared up or covered their face.
-		reason = get_interaction_block_reason(user, target, intentional)
-
 	if(reason)
 		if(intentional)
 			to_chat(user, "<span class='notice'>[reason]</span>")
 		return FALSE
 
+	if(target && interaction_range <= 1)
+		INVOKE_ASYNC(src, PROC_REF(contact_windup), user, target, intentional)
+		return TRUE
+
+	finish_interact(user, target, intentional)
+	return TRUE
+
+/datum/emote/human/interaction/proc/contact_windup(mob/user, mob/living/target, intentional)
+	target.show_message("<b>[user]</b> <i>тянется к вам.</i>", SHOWMSG_VISUAL)
+	if(!do_mob(user, target, INTERACTION_CONTACT_DELAY))
+		return
+	// The world had time to move on: the target may have squared up or covered their face.
+	var/reason = get_interaction_block_reason(user, target, intentional)
+	if(reason)
+		if(intentional)
+			to_chat(user, "<span class='notice'>[reason]</span>")
+		return
+	finish_interact(user, target, intentional)
+
+/datum/emote/human/interaction/proc/finish_interact(mob/user, mob/living/target, intentional)
 	do_emote(user, key, intentional, target)
 	if(target)
 		LAZYSET(user.next_emote_use, INTERACTION_COOLDOWN_GROUP, world.time + INTERACTION_COOLDOWN)
 	SEND_SIGNAL(user, COMSIG_MOB_EMOTE, key, intentional)
-	return TRUE
 
 /datum/emote/human/interaction/proc/get_interaction_candidates(mob/user)
 	var/list/candidates = list()
