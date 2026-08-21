@@ -8,6 +8,9 @@
 #define INTERACTION_COOLDOWN_GROUP "interaction"
 #define INTERACTION_COOLDOWN (4 SECONDS)
 
+// Contact takes a beat: the target sees the reach and has time to step away or square up.
+#define INTERACTION_CONTACT_DELAY (1.5 SECONDS)
+
 /datum/emote/human/interaction
 	// Label and tooltip for the interaction panel.
 	var/name
@@ -86,6 +89,10 @@
 	if(!in_interaction_range(user, target))
 		return "Слишком далеко."
 
+	// Harm intent is the refusal signal: someone squared up for a fight can't be touched.
+	if(interaction_range <= 1 && target.a_intent == INTENT_HARM)
+		return "Цель настроена враждебно."
+
 	if(!target.can_be_interacted_with() || !can_interact_with(target))
 		return "Сейчас не получится."
 
@@ -93,6 +100,14 @@
 
 /datum/emote/human/interaction/proc/try_interact(mob/user, mob/living/target, intentional = TRUE)
 	var/reason = get_interaction_block_reason(user, target, intentional)
+
+	if(!reason && target && interaction_range <= 1)
+		target.show_message("<b>[user]</b> <i>тянется к вам.</i>", SHOWMSG_VISUAL)
+		if(!do_mob(user, target, INTERACTION_CONTACT_DELAY))
+			return FALSE
+		// The world had time to move on: the target may have squared up or covered their face.
+		reason = get_interaction_block_reason(user, target, intentional)
+
 	if(reason)
 		if(intentional)
 			to_chat(user, "<span class='notice'>[reason]</span>")
@@ -195,6 +210,7 @@
 /datum/emote/human/interaction/handshake
 	key = "handshake"
 	name = "Пожать руку"
+	description = "Крепкое рукопожатие."
 
 	message_1p = "Вы жмёте руку %target%."
 	message_2p = "жмёт вам руку."
@@ -206,6 +222,7 @@
 /datum/emote/human/interaction/headpat
 	key = "headpat"
 	name = "Погладить по голове"
+	description = "Ласково потрепать по волосам."
 
 	message_1p = "Вы гладите %target% по голове."
 	message_2p = "гладит вас по голове."
@@ -217,6 +234,7 @@
 /datum/emote/human/interaction/pat
 	key = "pat"
 	name = "Похлопать по плечу"
+	description = "Дружеский жест поддержки."
 
 	message_1p = "Вы хлопаете %target% по плечу."
 	message_2p = "хлопает вас по плечу."
@@ -256,6 +274,7 @@
 /datum/emote/human/interaction/kiss
 	key = "kiss"
 	name = "Поцеловать в щёку"
+	description = "Лёгкий знак симпатии."
 
 	message_1p = "Вы целуете %target% в щёку."
 	message_2p = "целует вас в щёку."
@@ -291,6 +310,11 @@
 	message_3p = "указывает на %target%."
 
 	interaction_range = 7
+
+/datum/emote/human/interaction/point/do_emote(mob/user, emote_key, intentional, mob/living/target)
+	. = ..()
+	if(target)
+		user.pointed(target)
 
 /datum/emote/human/interaction/thumbsup
 	key = "thumbsup"
@@ -429,3 +453,4 @@
 
 #undef INTERACTION_COOLDOWN_GROUP
 #undef INTERACTION_COOLDOWN
+#undef INTERACTION_CONTACT_DELAY
