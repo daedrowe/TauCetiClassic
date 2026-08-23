@@ -33155,7 +33155,6 @@
 /turf/simulated/floor/plating,
 /area/station/maintenance/disposal)
 "bgg" = (
-/obj/machinery/light/small,
 /obj/machinery/atmospherics/pipe/simple/hidden/supply{
 	dir = 4
 	},
@@ -54634,6 +54633,11 @@
 /obj/structure/bedsheetbin/full{
 	pixel_y = 10
 	},
+/obj/machinery/camera{
+	c_tag = "Medbay Toilet";
+	dir = 8;
+	network = list("SS13","Medical")
+	},
 /turf/simulated/floor{
 	icon_state = "freezerfloor"
 	},
@@ -69232,10 +69236,8 @@
 	},
 /area/station/bridge/hop_office)
 "cLg" = (
-/obj/machinery/camera{
-	c_tag = "Medbay Toilet";
-	dir = 8;
-	network = list("SS13","Medical")
+/obj/machinery/light/smart{
+	dir = 4
 	},
 /turf/simulated/floor{
 	icon_state = "freezerfloor"
