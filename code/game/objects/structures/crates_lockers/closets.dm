@@ -28,6 +28,7 @@
 
 /obj/structure/closet/atom_init(mapload)
 	. = ..()
+	AddComponent(/datum/component/ember_blocker)
 	closet_list += src
 	if(mapload && !opened)		// if closed, any item at the crate's loc is put in the contents
 		for(var/obj/O in src.loc)

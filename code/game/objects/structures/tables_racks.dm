@@ -36,6 +36,7 @@
 
 /obj/structure/table/atom_init()
 	. = ..()
+	AddComponent(/datum/component/ember_blocker)
 	for(var/obj/structure/table/T in loc)
 		if(T != src)
 			warning("Found stacked table at [COORD(src)] while initializing map.")
@@ -797,6 +798,7 @@
 
 /obj/structure/rack/atom_init()
 	. = ..()
+	AddComponent(/datum/component/ember_blocker)
 	AddComponent(/datum/component/clickplace)
 
 /obj/structure/rack/airlock_crush_act()

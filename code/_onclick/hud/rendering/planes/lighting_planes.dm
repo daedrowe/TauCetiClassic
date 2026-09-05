@@ -127,6 +127,25 @@
 
 #define LIGHTING_LAMPS_RENDER_TARGET PM_RENDER_NAME(/atom/movable/screen/plane_master/lamps)
 
+/atom/movable/screen/plane_master/ember_mask
+	name = "ember mask plane master"
+	plane = LIGHTING_EMBER_MASK_PLANE
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	render_relay_planes = null
+	color = list(0,0,0,1, 0,0,0,0, 0,0,0,0, 0,0,0,0, 1,1,1,0)
+
+/atom/movable/screen/plane_master/embers
+	name = "embers plane master"
+	plane = LIGHTING_EMBER_PLANE
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	render_relay_planes = list(LIGHTING_LAMPS_PLANE)
+
+/atom/movable/screen/plane_master/embers/update_effects(client/client)
+	if(!..())
+		return
+	add_filter("ember_colors", 1, layering_filter(render_source = PM_RENDER_NAME(/atom/movable/screen/plane_master/game_world)))
+	add_filter("visible_embers", 2, alpha_mask_filter(render_source = PM_RENDER_NAME(/atom/movable/screen/plane_master/ember_mask)))
+
 /atom/movable/screen/plane_master/lamps_selfglow
 	name = "lamps selfglow plane master"
 	plane = LIGHTING_LAMPS_SELFGLOW
