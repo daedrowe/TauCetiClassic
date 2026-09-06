@@ -1,4 +1,5 @@
 /obj/item
+	blocks_emissive = TRUE
 	name = "item"
 	icon = 'icons/obj/items.dmi'
 	w_class = SIZE_SMALL
@@ -134,6 +135,9 @@
 	for(var/path in item_action_types)
 		var/datum/action/B = new path (src)
 		item_actions += B
+
+	if(blocks_emissive)
+		AddComponent(/datum/component/emissive_blocker)
 
 	return INITIALIZE_HINT_NORMAL
 

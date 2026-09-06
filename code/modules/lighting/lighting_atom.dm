@@ -119,9 +119,8 @@ var/global/EXPOSURE_CONTRAST_POWER = EXPOSURE_CONTRAST_POWER_DEF
 	cut_overlay(exposure_overlay)
 	if(glow_icon && glow_icon_state)
 		if(!glow_overlay)
-			glow_overlay = image(icon = glow_icon, icon_state = glow_icon_state, dir = dir, layer = 1)
+			glow_overlay = emissive_appearance(glow_icon, glow_icon_state, dir = dir)
 
-		glow_overlay.plane = LIGHTING_LAMPS_PLANE
 		glow_overlay.blend_mode = BLEND_OVERLAY
 		if(glow_colored)
 			var/datum/ColorMatrix/MATRIX = new(light_color, GLOW_CONTRAST_BASE + GLOW_CONTRAST_POWER * light_power, GLOW_BRIGHTNESS_BASE + GLOW_BRIGHTNESS_POWER * light_power)

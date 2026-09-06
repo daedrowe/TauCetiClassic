@@ -2,6 +2,8 @@
 	layer = OBJ_LAYER
 	appearance_flags = TILE_BOUND|PIXEL_SCALE
 
+	var/blocks_emissive = FALSE
+
 	var/last_move = null
 	var/anchored = FALSE
 	var/move_speed = 10
@@ -31,6 +33,11 @@
 
 	// A (nested) list of contents that need to be sent signals to when moving between areas. Can include src.
 	var/list/area_sensitive_contents
+
+/atom/movable/atom_init(mapload, ...)
+	. = ..()
+	if(blocks_emissive)
+		AddComponent(/datum/component/emissive_blocker)
 
 /atom/movable/Destroy()
 

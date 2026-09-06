@@ -794,12 +794,10 @@
 	if(user)
 		user.cut_overlay(lamp)
 		if(equipped_on_head && camera && on)
-			lamp = image(icon = 'icons/mob/nuclear_helm_overlays.dmi', icon_state = "[glowtype][combat_mode ? "_combat" : ""]_glow")
+			lamp = emissive_appearance('icons/mob/nuclear_helm_overlays.dmi', "[glowtype][combat_mode ? "_combat" : ""]_glow")
 			if(ishuman(user)) //Lets Update Lamps offset because human have height
 				var/mob/living/carbon/human/H = user
 				H.human_update_offset(lamp, TRUE)
-			lamp.plane = LIGHTING_LAMPS_PLANE
-			lamp.layer = ABOVE_LIGHTING_LAYER
 			lamp.alpha = 255
 			user.add_overlay(lamp)
 		update_inv_mob()

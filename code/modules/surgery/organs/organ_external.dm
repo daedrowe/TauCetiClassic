@@ -1167,8 +1167,9 @@ Note that amputating the affected organ does in fact remove the infection from t
 				eyes_colorable_layer.color = "#ff0000"
 
 			if(HAS_TRAIT(owner, TRAIT_GLOWING_EYES))
-				eyes_colorable_layer.plane = LIGHTING_LAMPS_PLANE
-				eyes_colorable_layer.layer = ABOVE_LIGHTING_LAYER
+				var/eye_color = eyes_colorable_layer.color
+				eyes_colorable_layer = emissive_appearance(species.eyes_icon, species.eyes_colorable_layer, ABOVE_LIGHTING_LAYER)
+				eyes_colorable_layer.color = eye_color
 
 		. += eyes_colorable_layer
 
