@@ -474,11 +474,12 @@
 	mannequin.underlays += inherited_underlay
 	mannequin.underlays += emissive_mask_appearance('icons/mob/human_face.dmi', "ipc_sinewave_s")
 	var/mutable_appearance/preview = mannequin.get_preview_appearance()
+	var/image/preview_snapshot = preview.appearance
 	if(count_emissive_masks(preview.overlays) || count_emissive_masks(preview.underlays))
 		errors += "Preview conversion left a white emissive mask in the image."
-	if(length(preview.underlays) != 2 || preview.underlays[1] != underlay.appearance)
+	if(length(preview_snapshot.underlays) != 2 || preview_snapshot.underlays[1] != underlay.appearance)
 		errors += "Preview conversion changed an ordinary underlay's plane, color, blend, filters or transform."
-	if(length(preview.underlays) != 2 || preview.underlays[2] != inherited_underlay.appearance)
+	if(length(preview_snapshot.underlays) != 2 || preview_snapshot.underlays[2] != inherited_underlay.appearance)
 		errors += "Preview conversion changed an underlay that must inherit its holder's direction."
 	var/mutable_appearance/inherited_overlay = new(inherited_underlay)
 	inherited_overlay.plane = ABOVE_GAME_PLANE
@@ -534,9 +535,9 @@
 	terminal.power_change()
 	if(terminal.light != atm_light)
 		errors += "Updating a powered ATM recreated its light source."
-	terminal.forceMove(null)
+	terminal.abstract_move(null)
 	terminal.power_change()
-	if(count_atom_emissive_masks(terminal) || terminal.light || terminal.light_range)
+	if(terminal.loc || !(terminal.stat & NOPOWER) || count_atom_emissive_masks(terminal) || terminal.light || terminal.light_range)
 		errors += "An ATM retained its sign glow or surrounding light after losing power."
 	terminal.forceMove(test_turf)
 	terminal.power_change()

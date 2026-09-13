@@ -916,8 +916,7 @@ ADD_TO_GLOBAL_LIST(/obj/machinery/alarm, air_alarms)
 		stat &= ~NOPOWER
 	else
 		stat |= NOPOWER
-	spawn(rand(0,15))
-		update_icon()
+	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_icon)), rand(0, 1.5 SECONDS))
 	update_power_use()
 
 /obj/machinery/alarm/examine(mob/user)
