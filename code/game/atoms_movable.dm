@@ -3,6 +3,7 @@
 	appearance_flags = TILE_BOUND|PIXEL_SCALE
 
 	var/blocks_emissive = FALSE
+	var/atom/movable/emissive_blocker/emissive_blocker
 
 	var/last_move = null
 	var/anchored = FALSE
@@ -36,8 +37,7 @@
 
 /atom/movable/atom_init(mapload, ...)
 	. = ..()
-	if(blocks_emissive)
-		AddComponent(/datum/component/emissive_blocker)
+	INIT_EMISSIVE_BLOCKER(src)
 
 /atom/movable/Destroy()
 
@@ -56,6 +56,8 @@
 	if(HAS_TRAIT(src, TRAIT_AREA_SENSITIVE))
 		on_area_sensitive_trait_loss()
 
+	QDEL_NULL(emissive_blocker)
+
 	. = ..()
 
 	loc = null
@@ -71,6 +73,15 @@
 	// world from tg: checking length(vis_contents) before cutting has significant speed benefits
 	if (length(vis_contents))
 		vis_contents.Cut()
+
+/atom/movable/emissive_blocker
+	name = "emissive blocker"
+	plane = EMISSIVE_MASK_PLANE
+	layer = FLOAT_LAYER
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	appearance_flags = KEEP_APART | KEEP_TOGETHER | RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM | PIXEL_SCALE
+	vis_flags = VIS_INHERIT_LAYER | VIS_INHERIT_ID | VIS_UNDERLAY
+	color = COLOR_BLACK
 
 // Previously known as HasEntered()
 // This is automatically called when something enters your square

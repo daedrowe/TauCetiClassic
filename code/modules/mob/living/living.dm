@@ -1,6 +1,3 @@
-/mob/living
-	blocks_emissive = TRUE
-
 /mob/living/atom_init()
 	. = ..()
 	living_list += src

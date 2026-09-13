@@ -136,8 +136,7 @@
 		var/datum/action/B = new path (src)
 		item_actions += B
 
-	if(blocks_emissive)
-		AddComponent(/datum/component/emissive_blocker)
+	INIT_EMISSIVE_BLOCKER(src)
 
 	return INITIALIZE_HINT_NORMAL
 

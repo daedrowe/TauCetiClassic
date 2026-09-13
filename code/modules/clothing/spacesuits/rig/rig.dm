@@ -34,6 +34,49 @@
 		)
 
 	var/rig_variant = "engineering"
+	var/mutable_appearance/emissive_overlay
+
+/obj/item/clothing/head/helmet/space/rig/atom_init(mapload)
+	. = ..()
+	update_world_icon()
+
+/obj/item/clothing/head/helmet/space/rig/Destroy()
+	emissive_overlay = null
+	return ..()
+
+/obj/item/clothing/head/helmet/space/rig/proc/build_light_overlay(_icon, _state)
+	var/emissive_state = "[_state]_emissive"
+	if(!icon_exists(_icon, emissive_state))
+		return null
+	var/static/list/light_overlays = list()
+	var/cache_key = "[_icon]_[emissive_state]"
+	if(!light_overlays[cache_key])
+		light_overlays[cache_key] = emissive_appearance(_icon, emissive_state)
+	return light_overlays[cache_key]
+
+/obj/item/clothing/head/helmet/space/rig/update_world_icon()
+	. = ..()
+	cut_overlay(emissive_overlay)
+	emissive_overlay = null
+	if(on && isturf(loc))
+		emissive_overlay = build_light_overlay(icon, icon_state)
+		if(emissive_overlay)
+			add_overlay(emissive_overlay)
+
+/obj/item/clothing/head/helmet/space/rig/refit_for_species(target_species)
+	. = ..()
+	update_world_icon()
+	update_inv_mob()
+
+/obj/item/clothing/head/helmet/space/rig/get_standing_overlay(mob/living/carbon/human/H, def_icon_path, sprite_sheet_slot, layer, bloodied_icon_state = null, icon_state_appendix = null, spare_icon_path = FALSE)
+	var/mutable_appearance/standing = ..()
+	if(!on || !standing)
+		return standing
+	var/mutable_appearance/light_overlay = build_light_overlay(standing.icon, standing.icon_state)
+	if(light_overlay)
+		standing.appearance_flags |= KEEP_APART
+		standing.add_overlay(light_overlay)
+	return standing
 
 /datum/action/item_action/hands_free/toggle_helmet_light
 	name = "Toggle Helmet Light"
@@ -44,6 +87,7 @@
 		return
 	on = !on
 	icon_state = "rig[on]-[rig_variant]"
+	update_world_icon()
 //	item_state = "rig[on]-[color]"
 	update_inv_mob()
 	update_item_actions()

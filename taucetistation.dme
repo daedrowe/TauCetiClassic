@@ -350,7 +350,6 @@
 #include "code\datums\components\cell_selfrecharge.dm"
 #include "code\datums\components\clickplace.dm"
 #include "code\datums\components\connect_range.dm"
-#include "code\datums\components\emissive_blocker.dm"
 #include "code\datums\components\epilepsy.dm"
 #include "code\datums\components\examine_research.dm"
 #include "code\datums\components\fishing.dm"
