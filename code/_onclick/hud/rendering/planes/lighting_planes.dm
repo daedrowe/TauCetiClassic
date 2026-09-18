@@ -149,7 +149,8 @@
 	name = "emissive plane master"
 	plane = EMISSIVE_COLOR_PLANE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	render_relay_planes = list(LIGHTING_LAMPS_PLANE)
+	blend_mode = BLEND_OVERLAY
+	render_relay_planes = list(RENDER_PLANE_GAME)
 
 /atom/movable/screen/plane_master/emissive/update_effects(client/client)
 	if(!..())
