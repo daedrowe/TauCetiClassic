@@ -157,6 +157,7 @@ What is the naming convention for planes or layers?
 
 #define EMISSIVE_MASK_PLANE 107
 #define EMISSIVE_COLOR_PLANE 108
+#define EMISSIVE_VISIBILITY_PLANE 109
 
 #define LIGHTING_EXPOSURE_PLANE 110 // Light sources "cones"
 #define LIGHTING_LAMPS_SELFGLOW 111 // Light sources glow (lamps, doors overlay, etc.)

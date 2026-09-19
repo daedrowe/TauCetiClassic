@@ -221,6 +221,7 @@
 	to_chat(src, "Emissive lighting: [prefs.emissive_lighting ? "Enabled" : "Disabled"].")
 	prefs.save_preferences()
 	update_plane_masters(/atom/movable/screen/plane_master/emissive_mask)
+	update_plane_masters(/atom/movable/screen/plane_master/emissive_visibility)
 	update_plane_masters(/atom/movable/screen/plane_master/emissive)
 	feedback_add_details("admin_verb", "EMLI")
 

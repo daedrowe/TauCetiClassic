@@ -15,6 +15,14 @@
 	mask.color = mask_color
 	return mask
 
+/proc/emissive_visibility_appearance()
+	var/static/mutable_appearance/mask
+	if(!mask)
+		mask = mutable_appearance('icons/blank.dmi', "white", plane = EMISSIVE_VISIBILITY_PLANE)
+		mask.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM | KEEP_APART | NO_CLIENT_COLOR
+		mask.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	return mask
+
 /proc/copy_without_emissive_planes(image/source)
 	if(!source || source.plane == EMISSIVE_MASK_PLANE || source.plane == EMISSIVE_COLOR_PLANE)
 		return null
