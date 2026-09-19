@@ -1,34 +1,34 @@
 /datum/unit_test/emissive_turf_visibility
 	name = "RENDERING: EMISSIVE TURF VISIBILITY"
 
-/datum/unit_test/emissive_turf_visibility/proc/count_masks(turf/target)
+/datum/unit_test/emissive_turf_visibility/proc/count_underlays(turf/target, target_plane)
 	. = 0
 	for(var/image/underlay as anything in target.underlays)
-		if(underlay.plane == EMISSIVE_VISIBILITY_PLANE)
+		if(underlay.plane == target_plane)
 			.++
 
 /datum/unit_test/emissive_turf_visibility/start_test()
 	var/turf/target = locate(1, 1, 1)
 	var/original_type = target.type
 	var/list/errors = list()
-	if(count_masks(target) != 1)
+	if(count_underlays(target, EMISSIVE_VISIBILITY_PLANE) != 1)
 		errors += "A map-loaded turf did not have exactly one visibility mask."
 
 	var/turf/simulated/floor/grid_floor/grid = target.ChangeTurf(/turf/simulated/floor/grid_floor)
 	grid.toggle_cower()
 	grid.toggle_cower()
-	if(count_masks(grid) != 1 || length(grid.underlays) != 2)
+	if(count_underlays(grid, EMISSIVE_VISIBILITY_PLANE) != 1 || count_underlays(grid, UNDERFLOOR_PLANE) != 1)
 		errors += "Changing a floor or opening its panel lost the visibility mask or the floor background."
 
 	var/turf/simulated/wall/wall = grid.ChangeTurf(/turf/simulated/wall)
 	wall.fixed_underlay = list("space" = TRUE)
 	wall.diagonal_smooth(N_NORTH | N_WEST)
 	wall.diagonal_smooth(N_NORTH | N_WEST)
-	if(count_masks(wall) != 1 || length(wall.underlays) != 2)
+	if(count_underlays(wall, EMISSIVE_VISIBILITY_PLANE) != 1 || count_underlays(wall, PLANE_SPACE) != 1)
 		errors += "Repeated diagonal smoothing lost or duplicated the visibility mask or the wall background."
 
 	var/turf/environment/space/space = new(wall)
-	if(count_masks(space) != 1)
+	if(count_underlays(space, EMISSIVE_VISIBILITY_PLANE) != 1)
 		errors += "Space initialization, which skips the base turf initializer, lost the visibility mask."
 	space.ChangeTurf(original_type)
 	if(length(errors))

@@ -243,7 +243,7 @@ Please contact me on #coderbus IRC. ~Carn x
 		// update height offsets and filters
 		switch(MA.layer)
 			if(-HAIR_LAYER) // shift hair instead of filter
-				for(var/mutable_appearance/hair_appearance as anything in grouped_by_layer[layer])
+				for(var/mutable_appearance/hair_appearance as anything in MA.overlays)
 					MA.appearance_flags |= hair_appearance.appearance_flags & KEEP_APART
 				MA = human_update_offset(MA, TRUE)
 			if(ABOVE_LIGHTING_LAYER)
