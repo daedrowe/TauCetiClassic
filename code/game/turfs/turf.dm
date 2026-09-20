@@ -70,7 +70,7 @@
 	if(initialized)
 		stack_trace("Warning: [src]([type]) initialized multiple times!")
 	initialized = TRUE
-	underlays += emissive_visibility_appearance()
+	underlays += global.emissive_visibility_mask
 
 	if(smooth)
 		queue_smooth(src)
